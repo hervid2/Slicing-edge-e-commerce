@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
@@ -7,14 +8,76 @@ import { useCartStore } from '@/stores/cart-store';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils';
 import { SHIPPING_FLAT_RATE, FREE_SHIPPING_THRESHOLD } from '@slicing-edge/shared';
+import { getCart, mapCartItems, removeCartItem, updateCartItem } from '@/lib/api/cart';
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, getTotal, getItemCount } = useCartStore();
+  const { sessionId, items, setItems } = useCartStore();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const subtotal = getTotal();
+  const refreshCart = async () => {
+    const data = await getCart(sessionId);
+    setItems(mapCartItems(data.cart));
+  };
+
+  useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await getCart(sessionId);
+        if (!active) return;
+        setItems(mapCartItems(data.cart));
+      } catch (e) {
+        if (!active) return;
+        setError(e instanceof Error ? e.message : 'Unable to load cart.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [sessionId, setItems]);
+
+  const handleUpdateQuantity = async (itemId: string, quantity: number) => {
+    if (quantity < 1) return;
+    setError('');
+    try {
+      await updateCartItem(sessionId, itemId, quantity);
+      await refreshCart();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to update quantity.');
+    }
+  };
+
+  const handleRemoveItem = async (itemId: string) => {
+    setError('');
+    try {
+      await removeCartItem(sessionId, itemId);
+      await refreshCart();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to remove item.');
+    }
+  };
+
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
   const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT_RATE;
   const total = subtotal + shipping;
-  const itemCount = getItemCount();
+  const itemCount = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center text-[var(--color-muted)]">
+        Loading cart...
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -41,6 +104,7 @@ export default function CartPage() {
       <h1 className="font-[family-name:var(--font-heading)] text-3xl font-bold text-[var(--color-primary)] sm:text-4xl">
         Shopping Cart
       </h1>
+      {error && <p className="mt-3 rounded-md bg-red-50 p-3 text-sm text-[var(--color-error)]">{error}</p>}
       <p className="mt-2 text-[var(--color-muted)]">
         {itemCount} {itemCount === 1 ? 'item' : 'items'} in your cart
       </p>
@@ -92,7 +156,7 @@ export default function CartPage() {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                         className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--color-border)] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-background)] disabled:opacity-50"
                         aria-label="Decrease quantity"
@@ -104,7 +168,7 @@ export default function CartPage() {
                       </span>
                       <button
                         type="button"
-                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                         disabled={item.quantity >= item.stock}
                         className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[var(--color-border)] text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-background)] disabled:opacity-50"
                         aria-label="Increase quantity"
@@ -115,7 +179,7 @@ export default function CartPage() {
 
                     <button
                       type="button"
-                      onClick={() => removeItem(item.productId)}
+                      onClick={() => handleRemoveItem(item.id)}
                       className="inline-flex items-center gap-1.5 text-sm text-[var(--color-error)] transition-colors hover:text-red-700"
                       aria-label={`Remove ${item.name}`}
                     >
@@ -166,9 +230,12 @@ export default function CartPage() {
               </div>
             </div>
 
-            <Button className="mt-6 w-full" size="lg">
+            <Link
+              href="/checkout"
+              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-md bg-[var(--color-accent)] px-6 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)]"
+            >
               Proceed to Checkout
-            </Button>
+            </Link>
 
             <div className="mt-4 text-center">
               <Link

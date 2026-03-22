@@ -12,11 +12,19 @@ export async function checkoutRoutes(app: FastifyInstance) {
     { preHandler: [optionalAuth] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = checkoutSchema.parse(request.body);
+      const sessionId = (request.headers['x-session-id'] as string) || undefined;
 
       if (!request.user?.sub && !body.guestEmail) {
         return reply.status(400).send({
           error: 'Validation Error',
           message: 'guestEmail is required for guest checkout',
+        });
+      }
+
+      if (!request.user?.sub && !sessionId) {
+        return reply.status(400).send({
+          error: 'Validation Error',
+          message: 'x-session-id is required for guest checkout',
         });
       }
 
@@ -29,6 +37,7 @@ export async function checkoutRoutes(app: FastifyInstance) {
 
       const order = await checkoutService.createOrder({
         userId: request.user?.sub,
+        sessionId,
         guestEmail: body.guestEmail,
         shippingAddress: body.shippingAddress,
       });

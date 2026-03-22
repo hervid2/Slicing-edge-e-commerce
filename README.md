@@ -35,6 +35,16 @@ slicing-edge/
 └── .env.example
 ```
 
+## Engineering Guidelines (Portfolio)
+
+This repository versions a small set of engineering standards to make implementation decisions explicit and reviewable:
+
+- `agent.md` — architecture, stack, and core coding conventions.
+- `.windsurf/skills/*.md` — focused rules for Next.js, Prisma, Tailwind/shadcn/Fastify, and Stripe.
+- `docs/engineering/README.md` — index and rationale for these guidelines.
+
+The goal is to demonstrate consistent engineering practices, not editor-specific metadata.
+
 ## Getting Started
 
 ### Prerequisites

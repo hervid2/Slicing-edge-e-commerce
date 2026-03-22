@@ -1,18 +1,17 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/stores/cart-store';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FLAT_RATE } from '@slicing-edge/shared';
 import { formatPrice } from '@/lib/utils';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { createCheckout, getCart, mapCartItems } from '@/lib/api/cart';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, getTotal } = useCartStore();
+  const { sessionId, items, setItems } = useCartStore();
 
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
@@ -23,9 +22,35 @@ export default function CheckoutPage() {
   const [country, setCountry] = useState('US');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
+  const [loadingCart, setLoadingCart] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const subtotal = getTotal();
+  useEffect(() => {
+    let active = true;
+
+    const loadCart = async () => {
+      setLoadingCart(true);
+      setError('');
+      try {
+        const data = await getCart(sessionId);
+        if (!active) return;
+        setItems(mapCartItems(data.cart));
+      } catch (e) {
+        if (!active) return;
+        setError(e instanceof Error ? e.message : 'Unable to load checkout cart.');
+      } finally {
+        if (active) setLoadingCart(false);
+      }
+    };
+
+    loadCart();
+
+    return () => {
+      active = false;
+    };
+  }, [sessionId, setItems]);
+
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
   const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT_RATE;
   const total = useMemo(() => subtotal + shipping, [subtotal, shipping]);
 
@@ -40,36 +65,33 @@ export default function CheckoutPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          guestEmail: email,
-          shippingAddress: {
-            fullName,
-            street,
-            city,
-            state,
-            zipCode,
-            country,
-            phone: phone || undefined,
-          },
-        }),
+      const data = await createCheckout(sessionId, {
+        guestEmail: email,
+        shippingAddress: {
+          fullName,
+          street,
+          city,
+          state,
+          zipCode,
+          country,
+          phone: phone || undefined,
+        },
       });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.message || 'Checkout failed. Please try again.');
-        return;
-      }
-
-      const data = await res.json();
+      setItems([]);
       router.push(`/orders?order=${encodeURIComponent(data.order.orderNumber)}&email=${encodeURIComponent(email)}`);
-    } catch {
-      setError('Unable to complete checkout right now.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to complete checkout right now.');
     } finally {
       setLoading(false);
     }
+  }
+
+  if (loadingCart) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center text-[var(--color-muted)]">
+        Loading checkout...
+      </div>
+    );
   }
 
   return (

@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 
 interface CheckoutInput {
   userId?: string;
+  sessionId?: string;
   guestEmail?: string;
   shippingAddress: {
     fullName: string;
@@ -36,8 +37,12 @@ export class CheckoutService {
   }
 
   async createOrder(input: CheckoutInput) {
+    if (!input.userId && !input.sessionId) {
+      throw new AppError('Session ID required for guest checkout', 400);
+    }
+
     const cart = await this.prisma.cart.findFirst({
-      where: input.userId ? { userId: input.userId } : undefined,
+      where: input.userId ? { userId: input.userId } : { sessionId: input.sessionId },
       include: {
         items: {
           include: {

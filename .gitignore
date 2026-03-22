@@ -29,6 +29,11 @@ Thumbs.db
 # Turbo
 .turbo
 
+# Windsurf local artifacts (keep curated skills tracked)
+.windsurf/*
+!.windsurf/skills/
+!.windsurf/skills/*.md
+
 # Prisma
 packages/db/generated
 
@@ -39,3 +44,7 @@ yarn-error.log*
 
 # Testing
 coverage
+
+# Functional and non functional requirements doc
+Slicing Edge FRNFR.docx
+
