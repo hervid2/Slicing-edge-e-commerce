@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Search, Package, Calendar, Truck, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,14 +35,21 @@ function statusIcon(status: OrderStatus) {
 }
 
 export default function OrdersPage() {
-  const [orderNumber, setOrderNumber] = useState('');
-  const [email, setEmail] = useState('');
+  const searchParams = useSearchParams();
+  const initialOrderNumber = searchParams.get('order') ?? '';
+  const initialEmail = searchParams.get('email') ?? '';
+
+  const [orderNumber, setOrderNumber] = useState(initialOrderNumber);
+  const [email, setEmail] = useState(initialEmail);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [order, setOrder] = useState<TrackedOrder | null>(null);
+  const [showOrderCreatedNotice, setShowOrderCreatedNotice] = useState(
+    Boolean(initialOrderNumber && initialEmail),
+  );
+  const autoTracked = useRef(false);
 
-  async function onTrack(e: React.FormEvent) {
-    e.preventDefault();
+  const trackOrder = useCallback(async (trackingOrderNumber: string, trackingEmail: string) => {
     setError('');
     setOrder(null);
     setLoading(true);
@@ -50,7 +58,7 @@ export default function OrdersPage() {
       const res = await fetch(`${API_URL}/api/orders/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderNumber, email }),
+        body: JSON.stringify({ orderNumber: trackingOrderNumber, email: trackingEmail }),
       });
 
       if (!res.ok) {
@@ -66,6 +74,24 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    if (autoTracked.current) return;
+
+    const orderFromQuery = searchParams.get('order')?.trim() ?? '';
+    const emailFromQuery = searchParams.get('email')?.trim() ?? '';
+
+    if (!orderFromQuery || !emailFromQuery) return;
+
+    autoTracked.current = true;
+    void trackOrder(orderFromQuery, emailFromQuery);
+  }, [searchParams, trackOrder]);
+
+  async function onTrack(e: React.FormEvent) {
+    e.preventDefault();
+    setShowOrderCreatedNotice(false);
+    await trackOrder(orderNumber, email);
   }
 
   return (
@@ -76,6 +102,12 @@ export default function OrdersPage() {
       <p className="mt-2 text-[var(--color-muted)]">
         Enter your order number and email to check your order status.
       </p>
+
+      {showOrderCreatedNotice && (
+        <div className="mt-4 rounded-md bg-green-50 p-3 text-sm text-[var(--color-success)]">
+          Order placed successfully. We prefilled your tracking details.
+        </div>
+      )}
 
       <form onSubmit={onTrack} className="mt-8 grid gap-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:grid-cols-2 sm:p-6">
         <Input

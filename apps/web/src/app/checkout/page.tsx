@@ -77,6 +77,13 @@ export default function CheckoutPage() {
           phone: phone || undefined,
         },
       });
+
+      if (data.checkoutUrl) {
+        setItems([]);
+        window.location.assign(data.checkoutUrl);
+        return;
+      }
+
       setItems([]);
       router.push(`/orders?order=${encodeURIComponent(data.order.orderNumber)}&email=${encodeURIComponent(email)}`);
     } catch (e) {

@@ -4,8 +4,17 @@ import Google from 'next-auth/providers/google';
 import { PrismaClient } from '@slicing-edge/db';
 import { loginSchema } from '@slicing-edge/shared';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
+
+function createApiAccessToken(payload: { sub: string; email: string; role: string }) {
+  const secret = process.env.AUTH_SECRET;
+
+  if (!secret) return null;
+
+  return jwt.sign(payload, secret, { expiresIn: '2h' });
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -31,8 +40,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const isValid = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!isValid) return null;
-
-        if (!user.emailVerified) return null;
 
         return {
           id: user.id,
@@ -98,8 +105,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        (session.user as { role?: string }).role = token.role as string;
+        const userId = (token.id as string | undefined) || token.sub;
+        const role = token.role as string | undefined;
+
+        if (userId) {
+          session.user.id = userId;
+        }
+
+        if (role) {
+          (session.user as { role?: string }).role = role;
+        }
+
+        if (userId && token.email && role) {
+          (session as { apiAccessToken?: string }).apiAccessToken = createApiAccessToken({
+            sub: userId,
+            email: token.email,
+            role,
+          }) || undefined;
+        }
       }
       return session;
     },

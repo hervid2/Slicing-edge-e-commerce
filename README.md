@@ -85,6 +85,38 @@ The goal is to demonstrate consistent engineering practices, not editor-specific
    - **API**: http://localhost:3001
    - **API Docs**: http://localhost:3001/docs
 
+### Stripe local setup and webhook testing
+
+1. Configure Stripe variables in `.env`:
+   ```env
+   STRIPE_SECRET_KEY=sk_test_xxx
+   STRIPE_WEBHOOK_SECRET=whsec_xxx
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+   FRONTEND_URL=http://localhost:3000
+   ```
+
+2. Start API and frontend.
+
+3. In a separate terminal, forward Stripe events to your local webhook:
+   ```bash
+   stripe listen --forward-to http://localhost:3001/api/checkout/webhook
+   ```
+
+4. Use Stripe test cards during checkout UI (never real cards):
+   - Success: `4242 4242 4242 4242`
+   - Declined payment: `4000 0000 0000 0002`
+   - 3D Secure flow: `4000 0025 0000 3155`
+   - Use any future date, any CVC, and dummy cardholder data.
+
+5. Optional webhook smoke trigger:
+   ```bash
+   stripe trigger checkout.session.completed
+   ```
+
+Expected behavior:
+- Successful payment transitions order status from `PENDING` to `PROCESSING`.
+- Failed/expired checkout events transition order to `CANCELLED`.
+
 ### Test Accounts (after seeding)
 
 | Role | Email | Password |

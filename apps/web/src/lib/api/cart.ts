@@ -1,5 +1,23 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+async function getAuthHeader() {
+  const header: { Authorization?: string } = {};
+
+  try {
+    const { getSession } = await import('next-auth/react');
+    const session = await getSession();
+    const accessToken = (session as { apiAccessToken?: string } | null)?.apiAccessToken;
+
+    if (accessToken) {
+      header.Authorization = `Bearer ${accessToken}`;
+    }
+  } catch {
+    // Ignore session retrieval errors and continue as guest.
+  }
+
+  return header;
+}
+
 export interface CartUiItem {
   id: string;
   productId: string;
@@ -33,13 +51,18 @@ function getErrorMessage(data: unknown, fallback: string) {
 }
 
 async function request<T>(path: string, init: RequestInit, sessionId: string) {
+  const authHeader = await getAuthHeader();
+  const headers = new Headers(init.headers);
+  headers.set('Content-Type', 'application/json');
+  headers.set('x-session-id', sessionId);
+
+  if (authHeader.Authorization) {
+    headers.set('Authorization', authHeader.Authorization);
+  }
+
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-session-id': sessionId,
-      ...(init.headers || {}),
-    },
+    headers,
   });
 
   const data = await res.json().catch(() => ({}));
@@ -98,17 +121,13 @@ export async function updateCartItem(sessionId: string, itemId: string, quantity
 }
 
 export async function removeCartItem(sessionId: string, itemId: string) {
-  const res = await fetch(`${API_URL}/api/cart/items/${itemId}`, {
-    method: 'DELETE',
-    headers: {
-      'x-session-id': sessionId,
+  await request<unknown>(
+    `/api/cart/items/${itemId}`,
+    {
+      method: 'DELETE',
     },
-  });
-
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(getErrorMessage(data, 'Unable to remove item'));
-  }
+    sessionId,
+  );
 }
 
 export async function createCheckout(
@@ -126,7 +145,7 @@ export async function createCheckout(
     };
   },
 ) {
-  return request<{ order: { orderNumber: string } }>(
+  return request<{ order: { orderNumber: string }; checkoutUrl?: string; stripeSessionId?: string }>(
     '/api/checkout',
     {
       method: 'POST',

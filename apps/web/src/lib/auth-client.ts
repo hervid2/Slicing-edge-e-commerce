@@ -7,6 +7,7 @@ export async function signIn(email: string, password: string) {
     email,
     password,
     redirect: false,
+    callbackUrl: '/',
   });
 
   if (!result || result.error) {

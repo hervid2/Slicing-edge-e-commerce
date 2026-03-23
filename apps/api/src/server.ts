@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import rawBody from 'fastify-raw-body';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -25,6 +26,12 @@ async function buildApp() {
 
   // ──── Security ────
   await app.register(helmet);
+  await app.register(rawBody, {
+    field: 'rawBody',
+    global: false,
+    encoding: 'utf8',
+    runFirst: true,
+  });
   await app.register(cors, {
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,

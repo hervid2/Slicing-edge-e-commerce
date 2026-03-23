@@ -6,6 +6,73 @@ import { optionalAuth } from '../../middleware/auth';
 export async function checkoutRoutes(app: FastifyInstance) {
   const checkoutService = new CheckoutService(app.prisma);
 
+  // POST /api/checkout/webhook
+  app.post(
+    '/checkout/webhook',
+    { config: { rawBody: true } },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const signature = request.headers['stripe-signature'];
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+      if (!webhookSecret) {
+        return reply.status(500).send({
+          error: 'Configuration Error',
+          message: 'Missing STRIPE_WEBHOOK_SECRET',
+        });
+      }
+
+      if (typeof signature !== 'string' || !signature) {
+        return reply.status(400).send({
+          error: 'Validation Error',
+          message: 'Missing stripe-signature header',
+        });
+      }
+
+      const payload = request.rawBody;
+
+      if (typeof payload !== 'string' || !payload) {
+        return reply.status(400).send({
+          error: 'Validation Error',
+          message: 'Missing raw webhook payload',
+        });
+      }
+
+      const isValidSignature = checkoutService.verifyStripeWebhookSignature(
+        payload,
+        signature,
+        webhookSecret,
+      );
+
+      if (!isValidSignature) {
+        return reply.status(400).send({
+          error: 'Validation Error',
+          message: 'Invalid Stripe webhook signature',
+        });
+      }
+
+      let event: { type?: string; data?: { object?: Record<string, unknown> } };
+      try {
+        event = JSON.parse(payload) as { type?: string; data?: { object?: Record<string, unknown> } };
+      } catch {
+        return reply.status(400).send({
+          error: 'Validation Error',
+          message: 'Invalid JSON payload',
+        });
+      }
+
+      const result = await checkoutService.handleStripeWebhookEvent(event);
+
+      if (!result.handled && result.reason === 'Malformed event payload') {
+        return reply.status(400).send({
+          error: 'Validation Error',
+          message: result.reason,
+        });
+      }
+
+      return reply.status(200).send({ received: true });
+    },
+  );
+
   // POST /api/checkout
   app.post(
     '/checkout',
@@ -42,10 +109,23 @@ export async function checkoutRoutes(app: FastifyInstance) {
         shippingAddress: body.shippingAddress,
       });
 
-      // TODO: Create Stripe Checkout Session and return URL
+      const stripeSession = await checkoutService.createStripeCheckoutSession({
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        currency: order.currency,
+        items: order.items.map((item) => ({
+          productName: item.productName,
+          productPrice: Number(item.productPrice),
+          quantity: item.quantity,
+        })),
+        shippingCost: Number(order.shippingCost),
+        customerEmail: order.guestEmail || request.user?.email,
+      });
+
       return reply.status(201).send({
         order,
-        message: 'Order created. Stripe checkout session integration pending.',
+        checkoutUrl: stripeSession.url,
+        stripeSessionId: stripeSession.id,
       });
     },
   );
