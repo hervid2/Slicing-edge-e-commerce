@@ -1,6 +1,7 @@
 {
   "extends": "../../packages/config/typescript/node.json",
   "compilerOptions": {
+    "jsx": "react-jsx",
     "outDir": "./dist",
     "rootDir": "./src"
   },

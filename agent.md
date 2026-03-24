@@ -41,6 +41,7 @@ E-commerce platform for premium kitchen knives. Turborepo monorepo with Next.js 
 - Structured logging with Pino — redact passwords/tokens
 - Optimistic locking on Product.version for stock management
 - Order snapshots: store product name/price/image at time of purchase
+- Every new module must include maintainable documentation: JSDoc for public functions/services and schema metadata for API endpoints.
 - Mobile-first responsive design (min-width breakpoints)
 - WCAG 2.1 AA accessibility: aria labels, focus rings, min 44×44px touch targets
 

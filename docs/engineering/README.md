@@ -6,6 +6,7 @@ This folder contains project-facing engineering standards intended for collabora
 
 - `../../agent.md`: high-level project architecture and coding conventions.
 - `../../.windsurf/skills/*.md`: focused rulesets for key technologies used in this project.
+- `./ROADMAP.md`: full project roadmap from current state to production deploy (week-by-week, day-by-day).
 
 ## Current skill packs
 

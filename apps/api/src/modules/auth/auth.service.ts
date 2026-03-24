@@ -6,6 +6,11 @@ import { AppError } from '../../middleware/error-handler';
 export class AuthService {
   constructor(private prisma: PrismaClient) {}
 
+  /**
+   * Registers a new customer account and creates an email verification token.
+   *
+   * @throws {AppError} When the email is already in use.
+   */
   async register(data: { name: string; email: string; password: string }) {
     const existing = await this.prisma.user.findUnique({
       where: { email: data.email },
@@ -40,6 +45,11 @@ export class AuthService {
     return { user, verificationToken };
   }
 
+  /**
+   * Verifies a user's email using a previously issued verification token.
+   *
+   * @throws {AppError} When the token is invalid or expired.
+   */
   async verifyEmail(token: string) {
     const record = await this.prisma.verificationToken.findUnique({
       where: { token },
@@ -61,6 +71,10 @@ export class AuthService {
     return true;
   }
 
+  /**
+   * Creates and stores a password reset token for an existing user.
+   * Returns null when the email does not exist to avoid account enumeration.
+   */
   async requestPasswordReset(email: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -90,6 +104,11 @@ export class AuthService {
     return { user, resetToken };
   }
 
+  /**
+   * Resets the password associated with a valid reset token.
+   *
+   * @throws {AppError} When the token is invalid, expired, or not a reset token.
+   */
   async resetPassword(token: string, newPassword: string) {
     const record = await this.prisma.verificationToken.findUnique({
       where: { token },

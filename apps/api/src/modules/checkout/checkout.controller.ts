@@ -3,13 +3,44 @@ import { checkoutSchema } from '@slicing-edge/shared';
 import { CheckoutService } from './checkout.service';
 import { optionalAuth } from '../../middleware/auth';
 
+/**
+ * Registers checkout creation and Stripe webhook endpoints.
+ */
 export async function checkoutRoutes(app: FastifyInstance) {
   const checkoutService = new CheckoutService(app.prisma);
 
-  // POST /api/checkout/webhook
   app.post(
     '/checkout/webhook',
-    { config: { rawBody: true } },
+    {
+      config: { rawBody: true },
+      schema: {
+        tags: ['Checkout'],
+        summary: 'Stripe webhook receiver',
+        description: 'Receives and validates Stripe webhook events.',
+        headers: {
+          type: 'object',
+          required: ['stripe-signature'],
+          properties: {
+            'stripe-signature': { type: 'string' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              received: { type: 'boolean' },
+            },
+          },
+          400: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const signature = request.headers['stripe-signature'];
       const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -73,10 +104,58 @@ export async function checkoutRoutes(app: FastifyInstance) {
     },
   );
 
-  // POST /api/checkout
   app.post(
     '/checkout',
-    { preHandler: [optionalAuth] },
+    {
+      preHandler: [optionalAuth],
+      schema: {
+        tags: ['Checkout'],
+        summary: 'Create checkout session',
+        description: 'Creates an order and a Stripe Checkout Session.',
+        headers: {
+          type: 'object',
+          properties: {
+            'x-session-id': { type: 'string' },
+          },
+        },
+        body: {
+          type: 'object',
+          properties: {
+            guestEmail: { type: 'string', format: 'email' },
+            shippingAddress: {
+              type: 'object',
+              required: ['fullName', 'street', 'city', 'state', 'zipCode', 'country'],
+              properties: {
+                fullName: { type: 'string' },
+                street: { type: 'string' },
+                city: { type: 'string' },
+                state: { type: 'string' },
+                zipCode: { type: 'string' },
+                country: { type: 'string' },
+                phone: { type: 'string' },
+              },
+            },
+          },
+        },
+        response: {
+          201: {
+            type: 'object',
+            properties: {
+              order: { type: 'object' },
+              checkoutUrl: { type: 'string' },
+              stripeSessionId: { type: 'string' },
+            },
+          },
+          400: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = checkoutSchema.parse(request.body);
       const sessionId = (request.headers['x-session-id'] as string) || undefined;

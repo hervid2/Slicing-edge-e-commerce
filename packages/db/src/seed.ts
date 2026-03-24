@@ -224,14 +224,106 @@ async function main() {
     },
   ];
 
+  const defaultImageUrl = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg';
+  const seedImageBySlug: Record<
+    string,
+    { url: string; publicId: string; altText: string }
+  > = {
+    'classic-chef-knife-8-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/classic-chef-knife-8-inch',
+      altText: 'Classic Chef Knife 8 inch',
+    },
+    'pro-chef-knife-10-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/pro-chef-knife-10-inch',
+      altText: 'Pro Chef Knife 10 inch',
+    },
+    'santoku-knife-7-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/santoku-knife-7-inch',
+      altText: 'Santoku Knife 7 inch',
+    },
+    'mini-santoku-5-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/mini-santoku-5-inch',
+      altText: 'Mini Santoku 5 inch',
+    },
+    'precision-paring-knife-3-5-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/precision-paring-knife-3-5-inch',
+      altText: 'Precision Paring Knife 3.5 inch',
+    },
+    'birds-beak-paring-knife-2-5-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/birds-beak-paring-knife-2-5-inch',
+      altText: "Bird's Beak Paring Knife 2.5 inch",
+    },
+    'artisan-bread-knife-9-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/artisan-bread-knife-9-inch',
+      altText: 'Artisan Bread Knife 9 inch',
+    },
+    'flexible-fillet-knife-7-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/flexible-fillet-knife-7-inch',
+      altText: 'Flexible Fillet Knife 7 inch',
+    },
+    'heavy-duty-meat-cleaver-7-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/heavy-duty-meat-cleaver-7-inch',
+      altText: 'Heavy Duty Meat Cleaver 7 inch',
+    },
+    'chinese-vegetable-cleaver-8-inch': {
+      url: defaultImageUrl,
+      publicId: 'seed/chinese-vegetable-cleaver-8-inch',
+      altText: 'Chinese Vegetable Cleaver 8 inch',
+    },
+  };
+
   for (const product of products) {
-    await prisma.product.upsert({
+    const createdProduct = await prisma.product.upsert({
       where: { slug: product.slug },
       update: {},
       create: product,
     });
+
+    const image = seedImageBySlug[product.slug] || {
+      url: defaultImageUrl,
+      publicId: `seed/${product.slug}`,
+      altText: product.name,
+    };
+
+    const existingPrimaryImage = await prisma.productImage.findFirst({
+      where: {
+        productId: createdProduct.id,
+        position: 0,
+      },
+    });
+
+    if (existingPrimaryImage) {
+      await prisma.productImage.update({
+        where: { id: existingPrimaryImage.id },
+        data: {
+          url: image.url,
+          cloudinaryPublicId: image.publicId,
+          altText: image.altText,
+        },
+      });
+    } else {
+      await prisma.productImage.create({
+        data: {
+          productId: createdProduct.id,
+          url: image.url,
+          cloudinaryPublicId: image.publicId,
+          altText: image.altText,
+          position: 0,
+        },
+      });
+    }
   }
   console.log(`  ✅ ${products.length} products created`);
+  console.log(`  ✅ ${products.length} primary product images upserted`);
 
   // ──── Customer Address ────
   await prisma.address.upsert({

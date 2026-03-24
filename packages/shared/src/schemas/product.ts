@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+export const productImageInputSchema = z.object({
+  url: z.string().url('Image URL must be a valid URL'),
+  cloudinaryPublicId: z.string().min(1, 'Image public id is required'),
+  altText: z.string().optional(),
+  position: z.number().int().min(0).default(0),
+});
+
 export const createProductSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   slug: z.string().min(2).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format'),
@@ -11,6 +18,7 @@ export const createProductSchema = z.object({
   categoryId: z.string().cuid(),
   isFeatured: z.boolean().default(false),
   isActive: z.boolean().default(true),
+  images: z.array(productImageInputSchema).max(8).optional(),
 });
 
 export const updateProductSchema = createProductSchema.partial();
@@ -42,3 +50,4 @@ export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type ProductQueryInput = z.infer<typeof productQuerySchema>;
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
+export type ProductImageInput = z.infer<typeof productImageInputSchema>;

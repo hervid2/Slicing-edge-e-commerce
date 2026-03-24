@@ -16,6 +16,9 @@ export class CartService {
     },
   } as const;
 
+  /**
+   * Merges a guest cart into a user cart at login time, preserving stock limits.
+   */
   private async mergeGuestCartIntoUserCart(userCartId: string, guestCartId: string) {
     await this.prisma.$transaction(async (tx) => {
       const [userItems, guestItems] = await Promise.all([
@@ -60,6 +63,12 @@ export class CartService {
     });
   }
 
+  /**
+   * Returns an existing cart or creates one for guests/users.
+   * Also performs guest-to-user cart merge when both carts exist.
+   *
+   * @throws {AppError} When neither userId nor sessionId is provided.
+   */
   async getOrCreateCart(userId?: string, sessionId?: string) {
     if (!userId && !sessionId) {
       throw new AppError('User ID or session ID required', 400);
@@ -124,6 +133,11 @@ export class CartService {
     });
   }
 
+  /**
+   * Adds an item to cart or increments quantity when the item already exists.
+   *
+   * @throws {AppError} When product is missing or requested quantity exceeds stock.
+   */
   async addItem(cartId: string, productId: string, quantity: number) {
     const product = await this.prisma.product.findUnique({
       where: { id: productId, isActive: true },
@@ -167,6 +181,11 @@ export class CartService {
     });
   }
 
+  /**
+   * Updates quantity for an existing cart item.
+   *
+   * @throws {AppError} When item is missing or quantity exceeds stock.
+   */
   async updateItemQuantity(itemId: string, quantity: number) {
     const item = await this.prisma.cartItem.findUnique({
       where: { id: itemId },
@@ -192,10 +211,16 @@ export class CartService {
     });
   }
 
+  /**
+   * Removes an item from cart.
+   */
   async removeItem(itemId: string) {
     return this.prisma.cartItem.delete({ where: { id: itemId } });
   }
 
+  /**
+   * Removes all items from a cart.
+   */
   async clearCart(cartId: string) {
     return this.prisma.cartItem.deleteMany({ where: { cartId } });
   }

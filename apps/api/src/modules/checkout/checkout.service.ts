@@ -2,6 +2,7 @@ import type { PrismaClient } from '@slicing-edge/db';
 import { AppError } from '../../middleware/error-handler';
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FLAT_RATE } from '@slicing-edge/shared';
 import crypto from 'node:crypto';
+import { sendEmail, OrderConfirmationEmail } from '@slicing-edge/email';
 
 interface CheckoutInput {
   userId?: string;
@@ -21,6 +22,82 @@ interface CheckoutInput {
 export class CheckoutService {
   constructor(private prisma: PrismaClient) {}
 
+  /**
+   * Converts an amount into USD display format for transactional emails.
+   */
+  private formatCurrency(amount: unknown) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(Number(amount));
+  }
+
+  /**
+   * Safely extracts `fullName` from persisted shipping JSON.
+   */
+  private getNameFromShippingAddress(shippingAddress: unknown) {
+    if (!shippingAddress || typeof shippingAddress !== 'object') return null;
+
+    const fullName = (shippingAddress as { fullName?: unknown }).fullName;
+    return typeof fullName === 'string' && fullName.trim().length > 0 ? fullName : null;
+  }
+
+  /**
+   * Sends an order confirmation email after successful payment confirmation.
+   * Falls back to log-only mode when Resend is not configured.
+   */
+  private async sendOrderConfirmationEmail(input: {
+    orderNumber: string;
+    customerEmail: string;
+    customerName: string;
+    guestEmail?: string | null;
+    items: Array<{ productName: string; quantity: number; productPrice: unknown }>;
+    subtotal: unknown;
+    shippingCost: unknown;
+    tax: unknown;
+    total: unknown;
+  }) {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const trackingParams = new URLSearchParams({ orderNumber: input.orderNumber });
+
+    if (input.guestEmail) {
+      trackingParams.set('email', input.guestEmail);
+    }
+
+    const trackingUrl = `${frontendUrl}/orders?${trackingParams.toString()}`;
+
+    if (!process.env.RESEND_API_KEY) {
+      console.info(
+        JSON.stringify({
+          message: 'Order confirmed — RESEND_API_KEY missing, order confirmation email not sent',
+          orderNumber: input.orderNumber,
+          customerEmail: input.customerEmail,
+          trackingUrl,
+        }),
+      );
+      return;
+    }
+
+    await sendEmail({
+      to: input.customerEmail,
+      subject: `Order confirmed: ${input.orderNumber}`,
+      react: OrderConfirmationEmail({
+        customerName: input.customerName,
+        orderNumber: input.orderNumber,
+        items: input.items.map((item) => ({
+          name: item.productName,
+          quantity: item.quantity,
+          price: this.formatCurrency(item.productPrice),
+        })),
+        subtotal: this.formatCurrency(input.subtotal),
+        shipping: this.formatCurrency(input.shippingCost),
+        tax: this.formatCurrency(input.tax),
+        total: this.formatCurrency(input.total),
+        trackingUrl,
+      }),
+    });
+  }
+
   private getStripeSignatureParts(signatureHeader: string) {
     const parts = signatureHeader.split(',').map((part) => part.trim());
     const entries = new Map<string, string>();
@@ -38,6 +115,13 @@ export class CheckoutService {
     };
   }
 
+  /**
+   * Verifies Stripe webhook signatures using timestamp + HMAC SHA256.
+   * @param payload The payload to verify.
+   * @param signatureHeader The signature header to verify against.
+   * @param webhookSecret The webhook secret to use for verification.
+   * @returns True if the signature is valid, false otherwise.
+   */
   verifyStripeWebhookSignature(payload: string, signatureHeader: string, webhookSecret: string) {
     const { timestamp, v1 } = this.getStripeSignatureParts(signatureHeader);
     if (!timestamp || !v1) return false;
@@ -83,6 +167,9 @@ export class CheckoutService {
     return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT_RATE;
   }
 
+  /**
+   * Creates a Stripe Checkout Session and stores `stripeSessionId` on the order.
+   */
   async createStripeCheckoutSession(input: {
     orderId: string;
     orderNumber: string;
@@ -175,7 +262,7 @@ export class CheckoutService {
   }) {
     const order = await this.prisma.order.findUnique({ where: { id: input.orderId } });
 
-    if (!order) return null;
+    if (!order) return { order: null, statusChanged: false };
 
     if (order.status === input.nextStatus) {
       if (input.stripePaymentIntentId && !order.stripePaymentIntentId) {
@@ -184,7 +271,7 @@ export class CheckoutService {
           data: { stripePaymentIntentId: input.stripePaymentIntentId },
         });
       }
-      return order;
+      return { order, statusChanged: false };
     }
 
     const [updatedOrder] = await this.prisma.$transaction([
@@ -206,9 +293,12 @@ export class CheckoutService {
       }),
     ]);
 
-    return updatedOrder;
+    return { order: updatedOrder, statusChanged: true };
   }
 
+  /**
+   * Handles Stripe webhook events relevant to order lifecycle transitions.
+   */
   async handleStripeWebhookEvent(event: {
     type?: string;
     data?: { object?: Record<string, unknown> };
@@ -255,6 +345,21 @@ export class CheckoutService {
 
     const order = await this.prisma.order.findFirst({
       where: { stripeSessionId: checkoutSessionId },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        items: {
+          select: {
+            productName: true,
+            productPrice: true,
+            quantity: true,
+          },
+        },
+      },
     });
 
     if (!order) {
@@ -265,7 +370,39 @@ export class CheckoutService {
       typeof object.payment_intent === 'string' ? object.payment_intent : undefined;
 
     switch (eventType) {
-      case 'checkout.session.completed':
+      case 'checkout.session.completed': {
+        const updateResult = await this.updateOrderStatusFromWebhook({
+          orderId: order.id,
+          nextStatus: 'PROCESSING',
+          note: `Stripe event: ${eventType}`,
+          stripePaymentIntentId: paymentIntentId,
+        });
+
+        const customerEmail = order.guestEmail || order.user?.email;
+        const customerName =
+          order.user?.name || this.getNameFromShippingAddress(order.shippingAddress) || 'there';
+
+        if (updateResult.statusChanged && customerEmail) {
+          try {
+            await this.sendOrderConfirmationEmail({
+              orderNumber: order.orderNumber,
+              customerEmail,
+              customerName,
+              guestEmail: order.guestEmail,
+              items: order.items,
+              subtotal: order.subtotal,
+              shippingCost: order.shippingCost,
+              tax: order.tax,
+              total: order.total,
+            });
+          } catch {
+            // Do not fail webhook acknowledgment for email delivery issues.
+          }
+        }
+
+        return { handled: true };
+      }
+
       case 'checkout.session.async_payment_succeeded':
         await this.updateOrderStatusFromWebhook({
           orderId: order.id,
@@ -290,6 +427,11 @@ export class CheckoutService {
     }
   }
 
+  /**
+   * Creates an order from current cart contents and atomically reserves stock.
+   *
+   * @throws {AppError} For empty carts, invalid guest sessions, or stock conflicts.
+   */
   async createOrder(input: CheckoutInput) {
     if (!input.userId && !input.sessionId) {
       throw new AppError('Session ID required for guest checkout', 400);

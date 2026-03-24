@@ -8,12 +8,14 @@ datasource db {
 }
 
 // ──── ENUMS ────
+// User authorization levels used across API middleware and admin routes.
 
 enum UserRole {
   CUSTOMER
   ADMIN
 }
 
+// Order lifecycle states synchronized by checkout flow + Stripe webhooks.
 enum OrderStatus {
   PENDING
   PROCESSING
@@ -23,6 +25,7 @@ enum OrderStatus {
 }
 
 // ──── AUTH.JS REQUIRED MODELS ────
+// These models must stay compatible with Auth.js adapters.
 
 model Account {
   id                String  @id @default(cuid())
@@ -64,6 +67,7 @@ model VerificationToken {
 
 // ──── BUSINESS MODELS ────
 
+// Primary user profile used by both credentials and OAuth flows.
 model User {
   id            String     @id @default(cuid())
   name          String?
@@ -85,6 +89,7 @@ model User {
   @@map("users")
 }
 
+// Normalized user addresses used for checkout prefill and account management.
 model Address {
   id        String   @id @default(cuid())
   userId    String
@@ -104,6 +109,7 @@ model Address {
   @@map("addresses")
 }
 
+// Product taxonomy used for navigation, filtering, and merchandising.
 model Category {
   id          String    @id @default(cuid())
   name        String    @unique
@@ -119,6 +125,7 @@ model Category {
   @@map("categories")
 }
 
+// Core product entity. `version` supports optimistic stock updates.
 model Product {
   id             String         @id @default(cuid())
   name           String
@@ -150,6 +157,7 @@ model Product {
   @@map("products")
 }
 
+// Product media layer; stores Cloudinary identifiers for lifecycle operations.
 model ProductImage {
   id                 String   @id @default(cuid())
   productId          String
@@ -163,6 +171,7 @@ model ProductImage {
   @@map("product_images")
 }
 
+// User-specific favorite products (auth-only feature).
 model Wishlist {
   id        String   @id @default(cuid())
   userId    String
@@ -175,6 +184,7 @@ model Wishlist {
   @@map("wishlists")
 }
 
+// Shopping cart supports either authenticated userId or guest sessionId.
 model Cart {
   id        String     @id @default(cuid())
   userId    String?    @unique
@@ -187,6 +197,7 @@ model Cart {
   @@map("carts")
 }
 
+// Cart line items keep quantity only; product details are resolved dynamically.
 model CartItem {
   id        String   @id @default(cuid())
   cartId    String
@@ -201,6 +212,7 @@ model CartItem {
   @@map("cart_items")
 }
 
+// Order snapshot stores immutable pricing values for historical correctness.
 model Order {
   id                    String               @id @default(cuid())
   orderNumber           String               @unique
@@ -216,6 +228,7 @@ model Order {
   currency              String               @default("USD")
   stripePaymentIntentId String?              @unique
   stripeSessionId       String?              @unique
+  // Shipping address snapshot captured at checkout time.
   shippingAddress       Json
   items                 OrderItem[]
   statusHistory         OrderStatusHistory[]
@@ -228,6 +241,7 @@ model Order {
   @@map("orders")
 }
 
+// Order item snapshot preserves name/price/image at purchase time.
 model OrderItem {
   id           String   @id @default(cuid())
   orderId      String
@@ -243,6 +257,7 @@ model OrderItem {
   @@map("order_items")
 }
 
+// Append-only timeline of order state transitions.
 model OrderStatusHistory {
   id        String      @id @default(cuid())
   orderId   String
@@ -254,6 +269,7 @@ model OrderStatusHistory {
   @@map("order_status_history")
 }
 
+// Product reviews are constrained to one review per user/product pair.
 model Review {
   id        String   @id @default(cuid())
   userId    String

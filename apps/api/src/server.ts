@@ -15,6 +15,7 @@ import { categoryRoutes } from './modules/category/category.controller';
 import { cartRoutes } from './modules/cart/cart.controller';
 import { orderRoutes } from './modules/order/order.controller';
 import { checkoutRoutes } from './modules/checkout/checkout.controller';
+import { uploadRoutes } from './modules/upload/upload.controller';
 import { loggerConfig } from './lib/logger';
 
 const PORT = Number(process.env.PORT) || 3001;
@@ -50,6 +51,27 @@ async function buildApp() {
         description: 'REST API for the Slicing Edge knife e-commerce platform',
         version: '1.0.0',
       },
+      tags: [
+        { name: 'Health', description: 'Health and readiness endpoints' },
+        { name: 'Auth', description: 'Authentication and account recovery endpoints' },
+        { name: 'Products', description: 'Product catalog and product management endpoints' },
+        { name: 'Categories', description: 'Category catalog and category management endpoints' },
+        { name: 'Cart', description: 'Shopping cart endpoints for guest and authenticated users' },
+        { name: 'Orders', description: 'Order tracking and user order endpoints' },
+        { name: 'Admin', description: 'Admin-only order and catalog operations' },
+        { name: 'Checkout', description: 'Checkout and payment webhook endpoints' },
+        { name: 'Uploads', description: 'Cloudinary upload endpoints for admin image workflows' },
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+            description: 'JWT signed by AUTH_SECRET and sent as Authorization: Bearer <token>.',
+          },
+        },
+      },
       servers: [
         {
           url: `http://localhost:${PORT}`,
@@ -76,6 +98,7 @@ async function buildApp() {
   await app.register(cartRoutes, { prefix: '/api' });
   await app.register(orderRoutes, { prefix: '/api' });
   await app.register(checkoutRoutes, { prefix: '/api' });
+  await app.register(uploadRoutes, { prefix: '/api' });
 
   return app;
 }

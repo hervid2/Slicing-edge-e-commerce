@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@slicing-edge.com';
 
@@ -13,6 +13,10 @@ export async function sendEmail({
   subject: string;
   react: React.ReactElement;
 }) {
+  if (!resend) {
+    throw new Error('Missing RESEND_API_KEY. Email provider is not configured.');
+  }
+
   const { data, error } = await resend.emails.send({
     from: `Slicing Edge <${FROM_EMAIL}>`,
     to,

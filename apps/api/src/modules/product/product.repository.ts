@@ -14,6 +14,64 @@ interface ProductQueryParams {
 export class ProductRepository {
   constructor(private prisma: PrismaClient) {}
 
+  async findManyAdmin(params: ProductQueryParams) {
+    const { page, limit, categorySlug, search, minPrice, maxPrice, inStock, sortBy } = params;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.ProductWhereInput = {
+      ...(categorySlug && { category: { slug: categorySlug } }),
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { description: { contains: search, mode: 'insensitive' as const } },
+        ],
+      }),
+      ...(minPrice !== undefined && { price: { gte: minPrice } }),
+      ...(maxPrice !== undefined && {
+        price: { ...((minPrice !== undefined ? { gte: minPrice } : {})), lte: maxPrice },
+      }),
+      ...(inStock && { stock: { gt: 0 } }),
+    };
+
+    const orderBy: Prisma.ProductOrderByWithRelationInput = (() => {
+      switch (sortBy) {
+        case 'price_asc':
+          return { price: 'asc' as const };
+        case 'price_desc':
+          return { price: 'desc' as const };
+        case 'rating':
+          return { avgRating: 'desc' as const };
+        case 'newest':
+        default:
+          return { createdAt: 'desc' as const };
+      }
+    })();
+
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        orderBy,
+        skip,
+        take: limit,
+        include: {
+          category: { select: { name: true, slug: true } },
+          images: { orderBy: { position: 'asc' }, take: 1 },
+        },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return {
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
   async findMany(params: ProductQueryParams) {
     const { page, limit, categorySlug, search, minPrice, maxPrice, inStock, sortBy } = params;
     const skip = (page - 1) * limit;
