@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ProductCard } from '@/components/product/product-card';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -95,12 +96,12 @@ export default async function ProductsPage({
             </a>
           ))}
           {params.category && (
-            <a
+            <Link
               href="/products"
               className="rounded-full border border-[var(--color-border)] px-4 py-1.5 text-sm font-medium text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
             >
               Clear
-            </a>
+            </Link>
           )}
         </div>
       </div>
@@ -136,7 +137,7 @@ export default async function ProductsPage({
       {pagination.totalPages > 1 && (
         <div className="mt-12 flex items-center justify-center gap-2">
           {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
-            <a
+            <Link
               key={p}
               href={`/products?page=${p}${params.category ? `&category=${params.category}` : ''}${params.sortBy ? `&sortBy=${params.sortBy}` : ''}`}
               className={`inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors ${
@@ -146,7 +147,7 @@ export default async function ProductsPage({
               }`}
             >
               {p}
-            </a>
+            </Link>
           ))}
         </div>
       )}

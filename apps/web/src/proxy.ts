@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export function proxy(_request: NextRequest) {
+export function proxy() {
   // Auth protection is handled at the page/layout level via
   // server-side session checks, not in middleware/proxy.
   return NextResponse.next();

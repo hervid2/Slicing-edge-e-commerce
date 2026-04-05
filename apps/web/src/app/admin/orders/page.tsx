@@ -33,7 +33,7 @@ export default async function AdminOrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {(data.orders || []).map((order: any) => (
+            {(data.orders || []).map((order: { id: string; orderNumber: string; status: string; total: number | string; createdAt: string }) => (
               <tr key={order.id} className="border-t border-[var(--color-border)]">
                 <td className="px-4 py-3 font-medium">{order.orderNumber}</td>
                 <td className="px-4 py-3">{order.status}</td>

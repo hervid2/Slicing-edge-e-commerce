@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cart-store';
-import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils';
 import { SHIPPING_FLAT_RATE, FREE_SHIPPING_THRESHOLD } from '@slicing-edge/shared';
 import { getCart, mapCartItems, removeCartItem, updateCartItem } from '@/lib/api/cart';
