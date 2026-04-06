@@ -70,7 +70,7 @@ export default async function ProductsPage({
       {/* Header */}
       <div className="mb-8">
         <h1 className="font-[family-name:var(--font-heading)] text-3xl font-bold text-[var(--color-primary)] sm:text-4xl">
-          Our Knives
+          {params.search ? `Results for "${params.search}"` : 'Our Knives'}
         </h1>
         <p className="mt-2 text-[var(--color-muted)]">
           {pagination.total > 0
@@ -79,31 +79,37 @@ export default async function ProductsPage({
         </p>
       </div>
 
-      {/* Sort controls */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex gap-2">
-          {['chef-knives', 'santoku-knives', 'paring-knives'].map((cat) => (
-            <a
-              key={cat}
-              href={`/products?category=${cat}`}
-              className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
-                params.category === cat
-                  ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
-                  : 'border-[var(--color-border)] text-[var(--color-foreground)] hover:border-[var(--color-accent)]'
-              }`}
-            >
-              {cat.replace('-', ' ').replace(/(^\w|\s\w)/g, (m) => m.toUpperCase()).replace('Knives', '').trim()}
-            </a>
-          ))}
-          {params.category && (
-            <Link
-              href="/products"
-              className="rounded-full border border-[var(--color-border)] px-4 py-1.5 text-sm font-medium text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
-            >
-              Clear
-            </Link>
-          )}
-        </div>
+      {/* Filters */}
+      <div className="mb-6 flex flex-wrap items-center gap-2">
+        {['chef-knives', 'santoku-knives', 'paring-knives'].map((cat) => (
+          <a
+            key={cat}
+            href={`/products?category=${cat}${params.search ? `&search=${encodeURIComponent(params.search)}` : ''}`}
+            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+              params.category === cat
+                ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
+                : 'border-[var(--color-border)] text-[var(--color-foreground)] hover:border-[var(--color-accent)]'
+            }`}
+          >
+            {cat.replace('-', ' ').replace(/(^\w|\s\w)/g, (m) => m.toUpperCase()).replace('Knives', '').trim()}
+          </a>
+        ))}
+        {params.search && (
+          <Link
+            href={params.category ? `/products?category=${params.category}` : '/products'}
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-accent)] bg-[var(--color-accent)]/10 px-4 py-1.5 text-sm font-medium text-[var(--color-accent)]"
+          >
+            &ldquo;{params.search}&rdquo; ×
+          </Link>
+        )}
+        {(params.category || params.search) && (
+          <Link
+            href="/products"
+            className="rounded-full border border-[var(--color-border)] px-4 py-1.5 text-sm font-medium text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+          >
+            Clear all
+          </Link>
+        )}
       </div>
 
       {/* Product grid */}
@@ -139,7 +145,7 @@ export default async function ProductsPage({
           {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
             <Link
               key={p}
-              href={`/products?page=${p}${params.category ? `&category=${params.category}` : ''}${params.sortBy ? `&sortBy=${params.sortBy}` : ''}`}
+              href={`/products?page=${p}${params.category ? `&category=${params.category}` : ''}${params.search ? `&search=${encodeURIComponent(params.search)}` : ''}${params.sortBy ? `&sortBy=${params.sortBy}` : ''}`}
               className={`inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors ${
                 p === pagination.page
                   ? 'bg-[var(--color-accent)] text-white'

@@ -104,10 +104,10 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 ## Semana 2 — Features de Usuario
 
 ### Día 6: Búsqueda funcional
-- [ ] API: asegurar que `GET /api/products?search=` funciona con full-text
-- [ ] Frontend: modal/drawer de búsqueda al hacer click en icono Search
-- [ ] Implementar búsqueda con debounce y resultados en dropdown
-- [ ] Página de resultados `/products?search=query`
+- [x] API: asegurar que `GET /api/products?search=` funciona con full-text
+- [x] Frontend: modal/drawer de búsqueda al hacer click en icono Search
+- [x] Implementar búsqueda con debounce y resultados en dropdown
+- [x] Página de resultados `/products?search=query`
 
 ### Día 7: Reviews — API + UI
 - [ ] API: `POST /api/products/:id/reviews` (auth required)

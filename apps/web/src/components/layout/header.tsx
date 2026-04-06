@@ -6,6 +6,7 @@ import { Menu, X, Heart, User, Search } from 'lucide-react';
 import { getSession, signOut } from 'next-auth/react';
 import { MobileNav } from './mobile-nav';
 import { CartButton } from './cart-button';
+import { SearchModal } from '@/components/search/search-modal';
 
 const navLinks = [
   { href: '/products', label: 'Shop' },
@@ -15,6 +16,7 @@ const navLinks = [
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(
     null,
   );
@@ -82,6 +84,7 @@ export function Header() {
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-md text-[var(--color-foreground)] transition-colors hover:text-[var(--color-accent)]"
             aria-label="Search"
+            onClick={() => setIsSearchOpen(true)}
           >
             <Search className="h-5 w-5" />
           </button>
@@ -118,6 +121,9 @@ export function Header() {
 
       {/* Mobile navigation */}
       <MobileNav isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+
+      {/* Search modal */}
+      {isSearchOpen && <SearchModal onClose={() => setIsSearchOpen(false)} />}
     </header>
   );
 }
