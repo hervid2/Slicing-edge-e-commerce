@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
+import { WishlistProvider } from "@/components/providers/wishlist-provider";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -37,9 +38,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AuthSessionProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <WishlistProvider>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </WishlistProvider>
         </AuthSessionProvider>
       </body>
     </html>

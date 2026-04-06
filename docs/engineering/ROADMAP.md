@@ -117,11 +117,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Actualizar `avgRating` y `reviewCount` al crear/eliminar review
 
 ### Día 8: Wishlist — API + UI
-- [ ] API: `POST /api/wishlist` (auth required, toggle add/remove)
-- [ ] API: `GET /api/wishlist` (auth required)
-- [ ] Frontend: botón de wishlist en ProductCard y Product Detail
-- [ ] Frontend: `/wishlist` page funcional con lista y remove
-- [ ] Indicador visual de items en wishlist (corazón relleno)
+- [x] API: `POST /api/wishlist` (auth required, toggle add/remove)
+- [x] API: `GET /api/wishlist` (auth required)
+- [x] Frontend: botón de wishlist en ProductCard y Product Detail
+- [x] Frontend: `/wishlist` page funcional con lista y remove
+- [x] Indicador visual de items en wishlist (corazón relleno)
 
 ### Día 9: Perfil de usuario + Order history
 - [ ] Frontend: `/account/page.tsx` — perfil con nombre, email, dirección

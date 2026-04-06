@@ -17,6 +17,7 @@ import { orderRoutes } from './modules/order/order.controller';
 import { checkoutRoutes } from './modules/checkout/checkout.controller';
 import { uploadRoutes } from './modules/upload/upload.controller';
 import { reviewRoutes } from './modules/review/review.controller';
+import { wishlistRoutes } from './modules/wishlist/wishlist.controller';
 import { loggerConfig } from './lib/logger';
 
 const PORT = Number(process.env.PORT) || 3001;
@@ -101,6 +102,7 @@ async function buildApp() {
   await app.register(checkoutRoutes, { prefix: '/api' });
   await app.register(uploadRoutes, { prefix: '/api' });
   await app.register(reviewRoutes, { prefix: '/api' });
+  await app.register(wishlistRoutes, { prefix: '/api' });
 
   return app;
 }

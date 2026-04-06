@@ -5,6 +5,7 @@ import { formatPrice } from '@/lib/utils';
 import type { Metadata } from 'next';
 import { AddToCartActions } from '@/components/product/add-to-cart-actions';
 import { ReviewSection } from '@/components/product/review-section';
+import { WishlistButton } from '@/components/product/wishlist-button';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -181,16 +182,21 @@ export default async function ProductDetailPage({
             <p>{product.description}</p>
           </div>
 
-          {/* Add to cart */}
-          <AddToCartActions
-            product={{
-              id: product.id,
-              name: product.name,
-              price: Number(product.price),
-              stock: product.stock,
-              imageUrl: product.images[0]?.url,
-            }}
-          />
+          {/* Add to cart + wishlist */}
+          <div className="mt-6 flex items-start gap-3">
+            <div className="flex-1">
+              <AddToCartActions
+                product={{
+                  id: product.id,
+                  name: product.name,
+                  price: Number(product.price),
+                  stock: product.stock,
+                  imageUrl: product.images[0]?.url,
+                }}
+              />
+            </div>
+            <WishlistButton productId={product.id} />
+          </div>
 
           {/* Shipping info */}
           <div className="mt-8 space-y-3 rounded-lg bg-[var(--color-background)] p-4 text-sm">
