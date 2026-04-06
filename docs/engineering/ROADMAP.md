@@ -130,10 +130,10 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Actualizar Header: link a /account cuando hay sesión
 
 ### Día 10: Cart merge + Checkout autenticado
-- [ ] API: endpoint o lógica para merge guest cart → user cart al login
-- [ ] Frontend: llamar merge después de `signIn` exitoso
-- [ ] Checkout: pre-fill email y nombre si el usuario está logueado
-- [ ] Checkout: pre-fill dirección guardada del usuario (si existe)
+- [x] API: endpoint o lógica para merge guest cart → user cart al login
+- [x] Frontend: llamar merge después de `signIn` exitoso
+- [x] Checkout: pre-fill email y nombre si el usuario está logueado
+- [x] Checkout: pre-fill dirección guardada del usuario (si existe)
 
 ---
 

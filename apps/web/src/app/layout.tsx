@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import { Header, Footer } from "@/components/layout";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { WishlistProvider } from "@/components/providers/wishlist-provider";
+import { CartSyncProvider } from "@/components/providers/cart-sync-provider";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -39,9 +40,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <AuthSessionProvider>
           <WishlistProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <CartSyncProvider>
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </CartSyncProvider>
           </WishlistProvider>
         </AuthSessionProvider>
       </body>
