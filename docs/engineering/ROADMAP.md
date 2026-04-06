@@ -140,10 +140,10 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 ## Semana 3 — Admin Avanzado, Chatbot y Polish
 
 ### Día 11: Admin — Dashboard con métricas
-- [ ] API: `GET /api/admin/metrics` (total orders, revenue, product count, user count)
-- [ ] Frontend: dashboard con tarjetas de KPIs
-- [ ] Gráfico simple de órdenes por día (últimos 30 días)
-- [ ] Lista de órdenes recientes + productos low-stock
+- [x] API: `GET /api/admin/metrics` (total orders, revenue, product count, user count)
+- [x] Frontend: dashboard con tarjetas de KPIs
+- [x] Gráfico simple de órdenes por día (últimos 30 días)
+- [x] Lista de órdenes recientes + productos low-stock
 
 ### Día 12: Admin — Gestión de usuarios
 - [ ] API: `GET /api/admin/users` (paginado)
