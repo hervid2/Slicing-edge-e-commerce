@@ -146,10 +146,10 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Lista de órdenes recientes + productos low-stock
 
 ### Día 12: Admin — Gestión de usuarios
-- [ ] API: `GET /api/admin/users` (paginado)
-- [ ] API: `PATCH /api/admin/users/:id/role` (cambiar rol)
-- [ ] Frontend: `/admin/users/page.tsx` — tabla de usuarios con rol
-- [ ] Agregar link en admin dashboard
+- [x] API: `GET /api/admin/users` (paginado)
+- [x] API: `PATCH /api/admin/users/:id/role` (cambiar rol)
+- [x] Frontend: `/admin/users/page.tsx` — tabla de usuarios con rol
+- [x] Agregar link en admin dashboard
 
 ### Día 13: AI Chatbot — Backend
 - [ ] Crear módulo `chatbot` en API: `POST /api/chatbot`
