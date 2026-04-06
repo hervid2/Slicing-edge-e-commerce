@@ -110,11 +110,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Página de resultados `/products?search=query`
 
 ### Día 7: Reviews — API + UI
-- [ ] API: `POST /api/products/:id/reviews` (auth required)
-- [ ] API: `GET /api/products/:id/reviews` (público, paginado)
-- [ ] API: `DELETE /api/products/:id/reviews/:reviewId` (own review o admin)
-- [ ] Frontend: formulario de review en Product Detail (estrellas + comentario)
-- [ ] Actualizar `avgRating` y `reviewCount` al crear/eliminar review
+- [x] API: `POST /api/products/:id/reviews` (auth required)
+- [x] API: `GET /api/products/:id/reviews` (público, paginado)
+- [x] API: `DELETE /api/products/:id/reviews/:reviewId` (own review o admin)
+- [x] Frontend: formulario de review en Product Detail (estrellas + comentario)
+- [x] Actualizar `avgRating` y `reviewCount` al crear/eliminar review
 
 ### Día 8: Wishlist — API + UI
 - [ ] API: `POST /api/wishlist` (auth required, toggle add/remove)
