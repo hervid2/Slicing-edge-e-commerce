@@ -87,17 +87,17 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Verificar que Product Detail y ProductCard rendericen imágenes correctamente
 
 ### Día 4: Admin — CRUD de productos
-- [ ] API: `POST /api/admin/products` (crear producto con imágenes)
-- [ ] API: `PUT /api/admin/products/:id` (editar producto)
-- [ ] API: `DELETE /api/admin/products/:id` (soft-delete / deactivate)
-- [ ] Frontend: `admin/products/new/page.tsx` — formulario de creación
-- [ ] Frontend: `admin/products/[id]/edit/page.tsx` — formulario de edición
+- [x] API: `POST /api/admin/products` (crear producto con imágenes)
+- [x] API: `PUT /api/admin/products/:id` (editar producto)
+- [x] API: `DELETE /api/admin/products/:id` (soft-delete / deactivate)
+- [x] Frontend: `admin/products/new/page.tsx` — formulario de creación
+- [x] Frontend: `admin/products/[id]/edit/page.tsx` — formulario de edición
 
 ### Día 5: Admin — Gestión de órdenes
-- [ ] Frontend: Admin orders page con botón/select para cambiar status
-- [ ] Implementar llamada `PATCH /api/admin/orders/:id/status` desde UI
-- [ ] Mostrar detalle de orden expandible (items, dirección, timeline)
-- [ ] Enviar email de notificación cuando orden cambia a SHIPPED
+- [x] Frontend: Admin orders page con botón/select para cambiar status
+- [x] Implementar llamada `PATCH /api/admin/orders/:id/status` desde UI
+- [x] Mostrar detalle de orden expandible (items, dirección, timeline)
+- [x] Enviar email de notificación cuando orden cambia a SHIPPED
 
 ---
 
