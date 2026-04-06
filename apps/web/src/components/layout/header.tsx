@@ -97,16 +97,25 @@ export function Header() {
           </Link>
           <CartButton />
           {sessionUser ? (
-            <button
-              type="button"
-              onClick={() => void signOut({ callbackUrl: '/' })}
-              className="hidden h-11 items-center gap-2 rounded-md px-3 text-[var(--color-foreground)] transition-colors hover:text-[var(--color-accent)] sm:inline-flex"
-              aria-label="Sign out"
-              title="Sign out"
-            >
-              <User className="h-5 w-5" />
-              <span className="text-sm">Sign out</span>
-            </button>
+            <>
+              <Link
+                href="/account"
+                className="hidden h-11 w-11 items-center justify-center rounded-md text-[var(--color-foreground)] transition-colors hover:text-[var(--color-accent)] sm:inline-flex"
+                aria-label="My account"
+                title="My account"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => void signOut({ callbackUrl: '/' })}
+                className="hidden h-11 items-center rounded-md px-2 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-accent)] sm:inline-flex"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                Sign out
+              </button>
+            </>
           ) : (
             <Link
               href="/auth/login"
@@ -120,7 +129,11 @@ export function Header() {
       </div>
 
       {/* Mobile navigation */}
-      <MobileNav isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      <MobileNav
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        isLoggedIn={!!sessionUser}
+      />
 
       {/* Search modal */}
       {isSearchOpen && <SearchModal onClose={() => setIsSearchOpen(false)} />}

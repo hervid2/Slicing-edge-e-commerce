@@ -124,10 +124,10 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Indicador visual de items en wishlist (corazón relleno)
 
 ### Día 9: Perfil de usuario + Order history
-- [ ] Frontend: `/account/page.tsx` — perfil con nombre, email, dirección
-- [ ] Frontend: `/account/orders/page.tsx` — historial de órdenes autenticado
-- [ ] API fetch con Bearer token (usar `apiAccessToken` de la sesión)
-- [ ] Actualizar Header: link a /account cuando hay sesión
+- [x] Frontend: `/account/page.tsx` — perfil con nombre, email, dirección
+- [x] Frontend: `/account/orders/page.tsx` — historial de órdenes autenticado
+- [x] API fetch con Bearer token (usar `apiAccessToken` de la sesión)
+- [x] Actualizar Header: link a /account cuando hay sesión
 
 ### Día 10: Cart merge + Checkout autenticado
 - [ ] API: endpoint o lógica para merge guest cart → user cart al login

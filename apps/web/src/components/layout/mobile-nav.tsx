@@ -12,9 +12,10 @@ const navLinks = [
 interface MobileNavProps {
   isOpen: boolean;
   onClose: () => void;
+  isLoggedIn?: boolean;
 }
 
-export function MobileNav({ isOpen, onClose }: MobileNavProps) {
+export function MobileNav({ isOpen, onClose, isLoggedIn }: MobileNavProps) {
   if (!isOpen) return null;
 
   return (
@@ -43,12 +44,12 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             Wishlist
           </Link>
           <Link
-            href="/auth/login"
+            href={isLoggedIn ? '/account' : '/auth/login'}
             onClick={onClose}
             className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-background)] hover:text-[var(--color-accent)]"
           >
             <User className="h-5 w-5" />
-            Account
+            {isLoggedIn ? 'My Account' : 'Sign In'}
           </Link>
         </div>
       </div>
