@@ -75,6 +75,26 @@ const TOOLS: Anthropic.Tool[] = [
   },
 ];
 
+/** Shape of a product returned by the chatbot alongside the text reply. */
+export interface ChatProduct {
+  id: string;
+  name: string;
+  slug: string;
+  price: string;
+  avgRating: number;
+  reviewCount: number;
+  stock: number;
+  category: { name: string; slug: string };
+  images: Array<{ url: string; altText: string | null }>;
+}
+
+/** Return type of ChatbotService.chat(). */
+export interface ChatbotReply {
+  reply: string;
+  /** Products surfaced by product-search tools during this turn. */
+  products: ChatProduct[];
+}
+
 export class ChatbotService {
   private client: Anthropic;
 
@@ -85,9 +105,13 @@ export class ChatbotService {
   }
 
   /**
-   * Executes a named tool against the database and returns a serializable result.
+   * Executes a named tool against the database.
+   * Returns the raw result and any products to surface to the frontend.
    */
-  private async executeTool(name: string, input: Record<string, unknown>): Promise<unknown> {
+  private async executeTool(
+    name: string,
+    input: Record<string, unknown>,
+  ): Promise<{ result: unknown; products?: ChatProduct[] }> {
     switch (name) {
       case 'search_products': {
         const query = String(input.query ?? '');
@@ -116,7 +140,12 @@ export class ChatbotService {
           orderBy: { avgRating: 'desc' },
         });
 
-        return { products };
+        const chatProducts = products.map((p) => ({
+          ...p,
+          price: p.price.toString(),
+        }));
+
+        return { result: { products: chatProducts }, products: chatProducts };
       }
 
       case 'get_products_by_category': {
@@ -143,7 +172,12 @@ export class ChatbotService {
           orderBy: { avgRating: 'desc' },
         });
 
-        return { products };
+        const chatProducts = products.map((p) => ({
+          ...p,
+          price: p.price.toString(),
+        }));
+
+        return { result: { products: chatProducts }, products: chatProducts };
       }
 
       case 'track_order': {
@@ -178,28 +212,33 @@ export class ChatbotService {
         });
 
         if (!order) {
-          return { error: 'Order not found. Please check the order number and email.' };
+          return {
+            result: { error: 'Order not found. Please check the order number and email.' },
+          };
         }
 
-        return { order };
+        return { result: { order } };
       }
 
       default:
-        return { error: `Unknown tool: ${name}` };
+        return { result: { error: `Unknown tool: ${name}` } };
     }
   }
 
   /**
    * Sends a user message to the Anthropic Claude chatbot and runs the tool-use
    * agentic loop until a final text response is produced.
+   * Returns the reply text and any products surfaced by product-search tools.
    *
    * @param input - Validated chatbot message input with history.
-   * @returns The assistant's final text reply.
    */
-  async chat(input: ChatbotMessageInput): Promise<string> {
+  async chat(input: ChatbotMessageInput): Promise<ChatbotReply> {
     if (!process.env.ANTHROPIC_API_KEY) {
       logger.warn('ANTHROPIC_API_KEY is not set — chatbot returning stub response');
-      return 'The chatbot is not configured yet. Please contact support.';
+      return {
+        reply: 'The chatbot is not configured yet. Please contact support.',
+        products: [],
+      };
     }
 
     const messages: Anthropic.MessageParam[] = [
@@ -220,6 +259,8 @@ export class ChatbotService {
 
     logger.debug({ stopReason: response.stop_reason }, 'chatbot initial response');
 
+    const allProducts: ChatProduct[] = [];
+
     // Agentic tool-use loop
     while (response.stop_reason === 'tool_use') {
       const toolUseBlocks = response.content.filter(
@@ -232,7 +273,15 @@ export class ChatbotService {
         logger.info({ tool: toolUse.name, input: toolUse.input }, 'chatbot executing tool');
 
         try {
-          const result = await this.executeTool(toolUse.name, toolUse.input as Record<string, unknown>);
+          const { result, products } = await this.executeTool(
+            toolUse.name,
+            toolUse.input as Record<string, unknown>,
+          );
+
+          if (products) {
+            allProducts.push(...products);
+          }
+
           toolResults.push({
             type: 'tool_result',
             tool_use_id: toolUse.id,
@@ -264,6 +313,10 @@ export class ChatbotService {
     }
 
     const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text');
-    return textBlock?.text ?? 'I could not generate a response. Please try again.';
+
+    return {
+      reply: textBlock?.text ?? 'I could not generate a response. Please try again.',
+      products: allProducts,
+    };
   }
 }

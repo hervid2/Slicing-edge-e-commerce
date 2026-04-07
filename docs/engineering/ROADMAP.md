@@ -158,10 +158,10 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Rate-limit específico para chatbot endpoint
 
 ### Día 14: AI Chatbot — Frontend
-- [ ] Componente `ChatWidget` flotante (bottom-right)
-- [ ] UI: burbuja de chat, input, historial de mensajes
-- [ ] Streaming de respuestas (o polling)
-- [ ] Mostrar product cards inline cuando el bot recomienda productos
+- [x] Componente `ChatWidget` flotante (bottom-right)
+- [x] UI: burbuja de chat, input, historial de mensajes
+- [x] Streaming de respuestas (o polling)
+- [x] Mostrar product cards inline cuando el bot recomienda productos
 
 ### Día 15: UX Polish
 - [ ] Skeleton loaders para Products, Cart, Order pages

@@ -52,6 +52,11 @@ export async function chatbotRoutes(app: FastifyInstance) {
             type: 'object',
             properties: {
               reply: { type: 'string', description: 'The assistant reply text' },
+              products: {
+                type: 'array',
+                description: 'Products surfaced by product-search tools (may be empty)',
+                items: { type: 'object' },
+              },
             },
           },
           429: {
@@ -67,8 +72,8 @@ export async function chatbotRoutes(app: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const input = chatbotMessageSchema.parse(request.body);
-      const replyText = await chatbotService.chat(input);
-      return reply.send({ reply: replyText });
+      const result = await chatbotService.chat(input);
+      return reply.send(result);
     },
   );
 }

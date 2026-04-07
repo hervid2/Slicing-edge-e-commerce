@@ -4,6 +4,7 @@ import { Header, Footer } from "@/components/layout";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { WishlistProvider } from "@/components/providers/wishlist-provider";
 import { CartSyncProvider } from "@/components/providers/cart-sync-provider";
+import { ChatWidget } from "@/components/chatbot/chat-widget";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -44,6 +45,7 @@ export default function RootLayout({
               <Header />
               <main className="flex-1">{children}</main>
               <Footer />
+              <ChatWidget />
             </CartSyncProvider>
           </WishlistProvider>
         </AuthSessionProvider>
