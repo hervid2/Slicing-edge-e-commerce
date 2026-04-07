@@ -6,6 +6,7 @@ import { Heart } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { formatPrice } from '@/lib/utils';
 import { useWishlist } from '@/components/providers/wishlist-provider';
+import { useToast } from '@/components/ui/toast';
 
 interface ProductCardProps {
   id: string;
@@ -34,12 +35,22 @@ export function ProductCard({
 }: ProductCardProps) {
   const { status } = useSession();
   const { wishlistedIds, toggle } = useWishlist();
+  const { toast } = useToast();
   const hasDiscount = compareAtPrice && compareAtPrice > price;
   const isWishlisted = wishlistedIds.has(id);
   const isLoggedIn = status === 'authenticated';
 
+  const handleWishlistToggle = async () => {
+    await toggle(id);
+    if (isWishlisted) {
+      toast(`"${name}" removed from wishlist`, 'info');
+    } else {
+      toast(`"${name}" saved to wishlist!`, 'success');
+    }
+  };
+
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] transition-shadow hover:shadow-md">
+    <div className="group relative overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] transition-all duration-300 hover:shadow-lg hover:border-[var(--color-accent)]/30 hover:-translate-y-0.5">
       {/* Product link covers the whole card */}
       <Link href={`/products/${slug}`} className="block" aria-label={name}>
         {/* Image */}
@@ -115,7 +126,7 @@ export function ProductCard({
       {isLoggedIn && (
         <button
           type="button"
-          onClick={() => void toggle(id)}
+          onClick={() => void handleWishlistToggle()}
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 shadow backdrop-blur-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
         >

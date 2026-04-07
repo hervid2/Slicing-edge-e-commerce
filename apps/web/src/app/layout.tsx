@@ -5,6 +5,7 @@ import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { WishlistProvider } from "@/components/providers/wishlist-provider";
 import { CartSyncProvider } from "@/components/providers/cart-sync-provider";
 import { ChatWidget } from "@/components/chatbot/chat-widget";
+import { ToastProvider } from "@/components/ui/toast";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -40,14 +41,16 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AuthSessionProvider>
-          <WishlistProvider>
-            <CartSyncProvider>
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-              <ChatWidget />
-            </CartSyncProvider>
-          </WishlistProvider>
+          <ToastProvider>
+            <WishlistProvider>
+              <CartSyncProvider>
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+                <ChatWidget />
+              </CartSyncProvider>
+            </WishlistProvider>
+          </ToastProvider>
         </AuthSessionProvider>
       </body>
     </html>

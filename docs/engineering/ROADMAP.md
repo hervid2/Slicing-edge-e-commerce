@@ -164,11 +164,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Mostrar product cards inline cuando el bot recomienda productos
 
 ### Día 15: UX Polish
-- [ ] Skeleton loaders para Products, Cart, Order pages
-- [ ] Toast notifications (add to cart, wishlist, etc.)
-- [ ] Animaciones de transición (page transitions, hover effects)
-- [ ] Empty states mejorados con ilustraciones
-- [ ] Responsive QA: verificar todas las páginas en mobile/tablet/desktop
+- [x] Skeleton loaders para Products, Cart, Order pages
+- [x] Toast notifications (add to cart, wishlist, etc.)
+- [x] Animaciones de transición (page transitions, hover effects)
+- [x] Empty states mejorados con ilustraciones
+- [x] Responsive QA: verificar todas las páginas en mobile/tablet/desktop
 
 ---
 

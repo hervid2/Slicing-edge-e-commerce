@@ -8,11 +8,13 @@ import { useCartStore } from '@/stores/cart-store';
 import { formatPrice } from '@/lib/utils';
 import { SHIPPING_FLAT_RATE, FREE_SHIPPING_THRESHOLD } from '@slicing-edge/shared';
 import { getCart, mapCartItems, removeCartItem, updateCartItem } from '@/lib/api/cart';
+import { useToast } from '@/components/ui/toast';
 
 export default function CartPage() {
   const { sessionId, items, setItems } = useCartStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { toast } = useToast();
 
   const refreshCart = async () => {
     const data = await getCart(sessionId);
@@ -60,8 +62,11 @@ export default function CartPage() {
     try {
       await removeCartItem(sessionId, itemId);
       await refreshCart();
+      toast('Item removed from cart', 'info');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unable to remove item.');
+      const msg = e instanceof Error ? e.message : 'Unable to remove item.';
+      setError(msg);
+      toast(msg, 'error');
     }
   };
 
@@ -72,8 +77,40 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-16 text-center text-[var(--color-muted)]">
-        Loading cart...
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12" aria-busy="true" aria-live="polite">
+        <div className="h-10 w-48 animate-pulse rounded-md bg-[var(--color-primary)]/20" />
+        <div className="mt-2 h-4 w-36 animate-pulse rounded bg-[var(--color-muted)]/20" />
+        <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-4 lg:col-span-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex gap-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:gap-6 sm:p-6">
+                <div className="h-24 w-24 shrink-0 animate-pulse rounded-md bg-[var(--color-muted)]/20 sm:h-32 sm:w-32" />
+                <div className="flex flex-1 flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="h-5 w-3/4 animate-pulse rounded bg-[var(--color-primary)]/20" />
+                    <div className="h-4 w-1/3 animate-pulse rounded bg-[var(--color-muted)]/20" />
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <div className="h-9 w-9 animate-pulse rounded-md bg-[var(--color-border)]" />
+                    <div className="h-9 w-10 animate-pulse rounded bg-[var(--color-muted)]/20" />
+                    <div className="h-9 w-9 animate-pulse rounded-md bg-[var(--color-border)]" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 lg:col-span-1">
+            <div className="h-6 w-36 animate-pulse rounded bg-[var(--color-primary)]/20" />
+            <div className="mt-6 space-y-3">
+              <div className="h-4 w-full animate-pulse rounded bg-[var(--color-muted)]/20" />
+              <div className="h-4 w-full animate-pulse rounded bg-[var(--color-muted)]/20" />
+              <div className="border-t border-[var(--color-border)] pt-3">
+                <div className="h-5 w-full animate-pulse rounded bg-[var(--color-primary)]/20" />
+              </div>
+            </div>
+            <div className="mt-6 h-12 w-full animate-pulse rounded-md bg-[var(--color-accent)]/30" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -81,18 +118,31 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-center px-4 py-24 text-center">
-        <ShoppingBag className="h-16 w-16 text-[var(--color-muted)]" />
+        {/* Illustrated empty bag */}
+        <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-[var(--color-primary)]/5">
+          <ShoppingBag className="h-16 w-16 text-[var(--color-primary)]/30" />
+          <span className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-lg">
+            🔪
+          </span>
+        </div>
         <h1 className="mt-6 font-[family-name:var(--font-heading)] text-3xl font-bold text-[var(--color-primary)]">
           Your Cart is Empty
         </h1>
-        <p className="mt-3 text-[var(--color-muted)]">
-          Looks like you haven&apos;t added any knives yet.
+        <p className="mt-3 max-w-xs text-[var(--color-muted)]">
+          Looks like you haven&apos;t added any knives yet. Explore our collection and find the
+          perfect blade.
         </p>
         <Link
           href="/products"
           className="mt-8 inline-flex h-12 items-center justify-center rounded-md bg-[var(--color-accent)] px-8 text-base font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)]"
         >
-          Continue Shopping
+          Browse Knives
+        </Link>
+        <Link
+          href="/"
+          className="mt-3 text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)]"
+        >
+          Go to Homepage
         </Link>
       </div>
     );

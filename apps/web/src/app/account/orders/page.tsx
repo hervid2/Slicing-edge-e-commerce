@@ -103,16 +103,21 @@ export default async function AccountOrdersPage() {
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <ShoppingBag className="h-14 w-14 text-[var(--color-muted)]" />
-          <p className="mt-4 text-lg font-medium text-[var(--color-primary)]">No orders yet</p>
-          <p className="mt-2 text-sm text-[var(--color-muted)]">
-            When you place an order it will appear here.
+          <div className="relative flex h-28 w-28 items-center justify-center rounded-full bg-[var(--color-primary)]/5">
+            <ShoppingBag className="h-12 w-12 text-[var(--color-primary)]/25" />
+            <span className="absolute -right-1 bottom-0 text-2xl">📦</span>
+          </div>
+          <p className="mt-6 font-[family-name:var(--font-heading)] text-xl font-semibold text-[var(--color-primary)]">
+            No orders yet
+          </p>
+          <p className="mt-2 max-w-xs text-sm text-[var(--color-muted)]">
+            Once you place an order it will appear here with full tracking details.
           </p>
           <Link
             href="/products"
             className="mt-6 inline-flex h-11 items-center rounded-md bg-[var(--color-accent)] px-6 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)]"
           >
-            Browse Products
+            Start Shopping
           </Link>
         </div>
       ) : (

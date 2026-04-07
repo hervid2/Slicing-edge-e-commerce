@@ -96,7 +96,18 @@ export default function WishlistPage() {
       </h1>
 
       {loading && (
-        <div className="py-20 text-center text-sm text-[var(--color-muted)]">Loading…</div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-busy="true" aria-live="polite">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
+              <div className="aspect-square animate-pulse bg-[var(--color-muted)]/20" />
+              <div className="space-y-2 p-4">
+                <div className="h-4 w-2/3 animate-pulse rounded bg-[var(--color-primary)]/20" />
+                <div className="h-5 w-3/4 animate-pulse rounded bg-[var(--color-primary)]/20" />
+                <div className="h-4 w-1/3 animate-pulse rounded bg-[var(--color-muted)]/20" />
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       {error && (
@@ -105,18 +116,21 @@ export default function WishlistPage() {
 
       {!loading && !error && items.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Heart className="h-14 w-14 text-[var(--color-muted)]" />
-          <p className="mt-4 text-lg font-medium text-[var(--color-primary)]">
+          <div className="relative flex h-28 w-28 items-center justify-center rounded-full bg-red-50">
+            <Heart className="h-12 w-12 text-red-200" />
+            <span className="absolute -right-1 -top-1 text-2xl">✨</span>
+          </div>
+          <p className="mt-6 font-[family-name:var(--font-heading)] text-xl font-semibold text-[var(--color-primary)]">
             Your wishlist is empty
           </p>
-          <p className="mt-2 text-sm text-[var(--color-muted)]">
-            Browse our collection and save your favourite knives.
+          <p className="mt-2 max-w-xs text-sm text-[var(--color-muted)]">
+            Save your favourite knives here so you can come back to them later.
           </p>
           <Link
             href="/products"
             className="mt-6 inline-flex h-11 items-center rounded-md bg-[var(--color-accent)] px-6 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)]"
           >
-            Browse Products
+            Explore Collection
           </Link>
         </div>
       )}
