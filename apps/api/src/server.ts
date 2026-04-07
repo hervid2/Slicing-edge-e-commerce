@@ -20,6 +20,7 @@ import { reviewRoutes } from './modules/review/review.controller';
 import { wishlistRoutes } from './modules/wishlist/wishlist.controller';
 import { metricsRoutes } from './modules/metrics/metrics.controller';
 import { userRoutes } from './modules/user/user.controller';
+import { chatbotRoutes } from './modules/chatbot/chatbot.controller';
 import { loggerConfig } from './lib/logger';
 
 const PORT = Number(process.env.PORT) || 3001;
@@ -65,6 +66,7 @@ async function buildApp() {
         { name: 'Admin', description: 'Admin-only order and catalog operations' },
         { name: 'Checkout', description: 'Checkout and payment webhook endpoints' },
         { name: 'Uploads', description: 'Cloudinary upload endpoints for admin image workflows' },
+        { name: 'Chatbot', description: 'AI shopping assistant powered by Anthropic Claude' },
       ],
       components: {
         securitySchemes: {
@@ -107,6 +109,7 @@ async function buildApp() {
   await app.register(wishlistRoutes, { prefix: '/api' });
   await app.register(metricsRoutes, { prefix: '/api' });
   await app.register(userRoutes, { prefix: '/api' });
+  await app.register(chatbotRoutes, { prefix: '/api' });
 
   return app;
 }

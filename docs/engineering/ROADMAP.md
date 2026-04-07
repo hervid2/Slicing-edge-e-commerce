@@ -152,10 +152,10 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Agregar link en admin dashboard
 
 ### Día 13: AI Chatbot — Backend
-- [ ] Crear módulo `chatbot` en API: `POST /api/chatbot`
-- [ ] Integrar Anthropic Claude con tool-use pattern
-- [ ] Tools: buscar productos, recomendar por categoría, rastrear orden
-- [ ] Rate-limit específico para chatbot endpoint
+- [x] Crear módulo `chatbot` en API: `POST /api/chatbot`
+- [x] Integrar Anthropic Claude con tool-use pattern
+- [x] Tools: buscar productos, recomendar por categoría, rastrear orden
+- [x] Rate-limit específico para chatbot endpoint
 
 ### Día 14: AI Chatbot — Frontend
 - [ ] Componente `ChatWidget` flotante (bottom-right)
