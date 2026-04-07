@@ -182,10 +182,10 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Configurar Vitest (o Jest) en `apps/api`
 
 ### Día 17: Testing — Frontend
-- [ ] Configurar testing con Vitest + React Testing Library en `apps/web`
-- [ ] Tests para componentes críticos: ProductCard, CartPage, CheckoutPage
-- [ ] Tests para cart store (Zustand)
-- [ ] Tests para auth flow (login, register)
+- [x] Configurar testing con Vitest + React Testing Library en `apps/web`
+- [x] Tests para componentes críticos: ProductCard, CartPage, CheckoutPage
+- [x] Tests para cart store (Zustand)
+- [x] Tests para auth flow (login, register)
 
 ### Día 18: SEO y Accesibilidad
 - [ ] Agregar `sitemap.ts` y `robots.ts` en `apps/web/src/app`
