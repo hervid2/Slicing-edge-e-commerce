@@ -175,11 +175,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 ## Semana 4 — Testing, SEO y Preparación para Deploy
 
 ### Día 16: Testing — Backend
-- [ ] Unit tests para `AuthService` (register, verify, reset)
-- [ ] Unit tests para `CheckoutService` (createOrder, webhook handling)
-- [ ] Unit tests para `ProductService` / `ProductRepository`
-- [ ] Integration tests para rutas principales (health, products, cart, checkout)
-- [ ] Configurar Vitest (o Jest) en `apps/api`
+- [x] Unit tests para `AuthService` (register, verify, reset)
+- [x] Unit tests para `CheckoutService` (createOrder, webhook handling)
+- [x] Unit tests para `ProductService` / `ProductRepository`
+- [x] Integration tests para rutas principales (health, products, cart, checkout)
+- [x] Configurar Vitest (o Jest) en `apps/api`
 
 ### Día 17: Testing — Frontend
 - [ ] Configurar testing con Vitest + React Testing Library en `apps/web`
