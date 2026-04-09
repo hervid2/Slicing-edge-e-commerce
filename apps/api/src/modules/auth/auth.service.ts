@@ -2,6 +2,7 @@ import { PrismaClient } from '@slicing-edge/db';
 import { hash } from 'bcryptjs';
 import crypto from 'node:crypto';
 import { AppError } from '../../middleware/error-handler';
+import { stripHtml } from '../../lib/sanitize';
 
 export class AuthService {
   constructor(private prisma: PrismaClient) {}
@@ -24,7 +25,7 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: {
-        name: data.name,
+        name: stripHtml(data.name),
         email: data.email,
         passwordHash,
         role: 'CUSTOMER',

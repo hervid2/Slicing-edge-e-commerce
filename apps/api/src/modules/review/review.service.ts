@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@slicing-edge/db';
 import { AppError } from '../../middleware/error-handler';
+import { stripHtml } from '../../lib/sanitize';
 import { ReviewRepository } from './review.repository';
 
 export class ReviewService {
@@ -17,7 +18,7 @@ export class ReviewService {
    */
   async create(userId: string, productId: string, rating: number, comment: string) {
     try {
-      return await this.repo.create({ userId, productId, rating, comment });
+      return await this.repo.create({ userId, productId, rating, comment: stripHtml(comment) });
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code;
       if (code === 'P2002') throw new AppError('You have already reviewed this product', 409);

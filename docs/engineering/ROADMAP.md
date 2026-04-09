@@ -195,11 +195,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Lighthouse audit y correcciones (target: 90+ en todas las categorías)
 
 ### Día 19: Seguridad y Rate Limiting
-- [ ] Migrar rate-limit a Upstash Redis (`@upstash/ratelimit`)
-- [ ] Revisar CORS config para producción
-- [ ] Sanitizar inputs (XSS prevention)
-- [ ] Verificar que no hay API keys expuestas al client
-- [ ] Agregar CSP headers apropiados
+- [x] Migrar rate-limit a Upstash Redis (`@upstash/ratelimit`)
+- [x] Revisar CORS config para producción
+- [x] Sanitizar inputs (XSS prevention)
+- [x] Verificar que no hay API keys expuestas al client
+- [x] Agregar CSP headers apropiados
 
 ### Día 20: Configuración de deploy
 - [ ] Crear `Dockerfile` o config para Railway (API)

@@ -7,6 +7,7 @@ import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import type { PrismaClient } from '@slicing-edge/db';
 import { prismaPlugin } from './plugins/prisma';
+import { upstashRateLimitPlugin } from './plugins/upstash-rate-limit';
 import { errorHandler } from './middleware/error-handler';
 import { healthRoutes } from './modules/health/health.controller';
 import { authRoutes } from './modules/auth/auth.controller';
@@ -43,12 +44,53 @@ export async function buildApp({ overridePrisma }: BuildAppOptions = {}) {
   });
 
   if (!isTest) {
-    await app.register(helmet);
-    await app.register(cors, {
-      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-      credentials: true,
+    // ── Helmet with CSP ────────────────────────────────────────────────────
+    await app.register(helmet, {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
+          connectSrc: ["'self'"],
+          frameSrc: ["'none'"],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+        },
+      },
+      // Allow Swagger UI to load its embedded assets in dev
+      crossOriginEmbedderPolicy: process.env.NODE_ENV === 'production',
     });
+
+    // ── CORS — multi-origin for production ─────────────────────────────────
+    // Set ALLOWED_ORIGINS=https://example.com,https://preview.example.com
+    // Falls back to FRONTEND_URL or localhost for local dev.
+    const allowedOrigins = (
+      process.env.ALLOWED_ORIGINS ||
+      process.env.FRONTEND_URL ||
+      'http://localhost:3000'
+    )
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean);
+
+    await app.register(cors, {
+      origin: (origin, cb) => {
+        // Allow server-to-server requests (no Origin header) and allowed origins
+        if (!origin || allowedOrigins.includes(origin)) {
+          return cb(null, true);
+        }
+        return cb(new Error(`CORS: origin "${origin}" not allowed`), false);
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    });
+
+    // ── Rate limiting — in-memory fallback; Upstash used when env vars set ─
     await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
+    await app.register(upstashRateLimitPlugin);
+
     await app.register(swagger, {
       openapi: {
         info: { title: 'Slicing Edge API', description: 'REST API', version: '1.0.0' },
