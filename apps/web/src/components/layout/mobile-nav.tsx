@@ -40,7 +40,7 @@ export function MobileNav({ isOpen, onClose, isLoggedIn }: MobileNavProps) {
             onClick={onClose}
             className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-background)] hover:text-[var(--color-accent)]"
           >
-            <Heart className="h-5 w-5" />
+            <Heart className="h-5 w-5" aria-hidden="true" />
             Wishlist
           </Link>
           <Link
@@ -48,7 +48,7 @@ export function MobileNav({ isOpen, onClose, isLoggedIn }: MobileNavProps) {
             onClick={onClose}
             className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-background)] hover:text-[var(--color-accent)]"
           >
-            <User className="h-5 w-5" />
+            <User className="h-5 w-5" aria-hidden="true" />
             {isLoggedIn ? 'My Account' : 'Sign In'}
           </Link>
         </div>

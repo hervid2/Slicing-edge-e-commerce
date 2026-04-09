@@ -138,6 +138,15 @@ export function SearchModal({ onClose }: SearchModalProps) {
           </button>
         </form>
 
+        {/* Live region for screen reader announcements */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {searched && !loading && (
+            results.length === 0
+              ? `No products found for "${query.trim()}"`
+              : `${results.length} product${results.length === 1 ? '' : 's'} found`
+          )}
+        </div>
+
         {/* Results */}
         {results.length > 0 && (
           <ul role="listbox" aria-label="Search results" className="max-h-80 overflow-y-auto py-2">

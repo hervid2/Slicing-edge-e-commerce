@@ -188,11 +188,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Tests para auth flow (login, register)
 
 ### Día 18: SEO y Accesibilidad
-- [ ] Agregar `sitemap.ts` y `robots.ts` en `apps/web/src/app`
-- [ ] OG images para Home, Products, Product Detail
-- [ ] Structured data (JSON-LD) para Product pages
-- [ ] Audit WCAG 2.1 AA: aria labels, color contrast, focus management
-- [ ] Lighthouse audit y correcciones (target: 90+ en todas las categorías)
+- [x] Agregar `sitemap.ts` y `robots.ts` en `apps/web/src/app`
+- [x] OG images para Home, Products, Product Detail
+- [x] Structured data (JSON-LD) para Product pages
+- [x] Audit WCAG 2.1 AA: aria labels, color contrast, focus management
+- [x] Lighthouse audit y correcciones (target: 90+ en todas las categorías)
 
 ### Día 19: Seguridad y Rate Limiting
 - [ ] Migrar rate-limit a Upstash Redis (`@upstash/ratelimit`)

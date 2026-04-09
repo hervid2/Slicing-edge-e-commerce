@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+const CATEGORY_MAP: Record<string, string> = {
+  "Chef's Knives": "chef-knives",
+  "Santoku Knives": "santoku-knives",
+  "Paring Knives": "paring-knives",
+};
+
 export default function Home() {
   return (
     <>
@@ -41,9 +47,11 @@ export default function Home() {
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {["Chef's Knives", "Santoku Knives", "Paring Knives"].map(
             (category) => (
-              <div
+              <Link
                 key={category}
-                className="group relative flex h-64 items-end overflow-hidden rounded-lg bg-[var(--color-primary-light)] p-6 transition-transform hover:scale-[1.02]"
+                href={`/products?category=${CATEGORY_MAP[category]}`}
+                className="group relative flex h-64 items-end overflow-hidden rounded-lg bg-[var(--color-primary-light)] p-6 transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
+                aria-label={`Shop ${category} collection`}
               >
                 <div className="relative z-10">
                   <h3 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-white">
@@ -51,7 +59,7 @@ export default function Home() {
                   </h3>
                   <p className="mt-1 text-sm text-white/70">Shop collection</p>
                 </div>
-              </div>
+              </Link>
             )
           )}
         </div>

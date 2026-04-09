@@ -52,6 +52,11 @@ async function getProducts(searchParams: SearchParams) {
 
 export const metadata = {
   title: 'Shop All Knives',
+  description: 'Browse our full collection of handcrafted premium kitchen knives — Chef\'s, Santoku, Paring, and more.',
+  openGraph: {
+    title: 'Shop All Knives | Slicing Edge',
+    description: 'Browse our full collection of handcrafted premium kitchen knives.',
+  },
 };
 
 export default async function ProductsPage({
