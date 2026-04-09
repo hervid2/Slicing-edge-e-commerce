@@ -1,0 +1,149 @@
+# Slicing Edge — Deploy Guide
+
+Production deployment: **API → Railway** | **Web → Vercel** | **DB → Railway PostgreSQL (or Neon)**
+
+---
+
+## Architecture overview
+
+```
+Vercel (Next.js)  ──→  Railway (Fastify API)  ──→  Railway PostgreSQL
+                                ↑
+                         Upstash Redis
+                         Cloudinary CDN
+                         Stripe (webhooks)
+                         Resend (email)
+                         Anthropic Claude (AI)
+```
+
+---
+
+## 1. Database — Railway PostgreSQL
+
+### Create the database
+
+1. In Railway dashboard → **New project** → **Provision PostgreSQL**
+2. Copy the `DATABASE_URL` from the **Variables** tab of the PostgreSQL service.
+   Format: `postgresql://user:password@host:port/railway`
+
+### Run migrations
+
+```bash
+# From the repo root — runs `prisma migrate deploy` against DATABASE_URL
+DATABASE_URL="postgresql://..." npm run db:migrate:deploy
+
+# Then seed production data (categories + products with real images)
+DATABASE_URL="postgresql://..." npm run db:seed:prod
+```
+
+> **Note:** `prisma migrate deploy` applies all pending migrations without creating new ones. Always run this before starting the API in production.
+
+---
+
+## 2. API — Railway
+
+### Setup steps
+
+1. In Railway dashboard → **New service** → **GitHub repo** → select this repo
+2. Railway auto-detects `railway.toml` at the root and uses `apps/api/Dockerfile`
+3. Set **Root Directory** to `/` (monorepo root — the Dockerfile needs the full context)
+
+### Environment variables (Railway → Service → Variables)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | ✅ | PostgreSQL connection string from Railway DB service |
+| `AUTH_SECRET` | ✅ | 32+ char secret — generate with `npx auth secret` |
+| `STRIPE_SECRET_KEY` | ✅ | Stripe secret key (`sk_live_...` or `sk_test_...`) |
+| `STRIPE_WEBHOOK_SECRET` | ✅ | From Stripe Dashboard → Webhooks → Signing secret |
+| `FRONTEND_URL` | ✅ | Production Vercel URL, e.g. `https://slicing-edge.vercel.app` |
+| `ALLOWED_ORIGINS` | ✅ | CSV of allowed CORS origins, e.g. `https://slicing-edge.vercel.app` |
+| `RESEND_API_KEY` | ✅ | From Resend dashboard |
+| `RESEND_FROM_EMAIL` | ✅ | Verified sender, e.g. `noreply@slicing-edge.com` |
+| `CLOUDINARY_CLOUD_NAME` | ✅ | Your Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | ✅ | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | ✅ | Cloudinary API secret |
+| `UPSTASH_REDIS_REST_URL` | ⚡ | Upstash Redis REST URL (recommended for multi-instance) |
+| `UPSTASH_REDIS_REST_TOKEN` | ⚡ | Upstash Redis REST token |
+| `ANTHROPIC_API_KEY` | 🤖 | Required only if AI chatbot is enabled |
+| `PORT` | — | Defaults to `3001`; Railway sets `PORT` automatically |
+| `NODE_ENV` | — | Set to `production` |
+| `LOG_LEVEL` | — | Recommended: `info` |
+
+### Stripe webhook endpoint
+
+After deploy, register the webhook in Stripe Dashboard:
+- **URL:** `https://<railway-api-url>/api/checkout/webhook`
+- **Events:** `checkout.session.completed`, `payment_intent.payment_failed`
+
+---
+
+## 3. Web — Vercel
+
+### Setup steps
+
+1. In Vercel dashboard → **Add New Project** → import GitHub repo
+2. Set **Root Directory** to `apps/web`
+3. Vercel detects Next.js automatically; `vercel.json` overrides the build command to run Turbo
+
+### Environment variables (Vercel → Project → Settings → Environment Variables)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | ✅ | Railway API URL, e.g. `https://api.slicing-edge.up.railway.app` |
+| `AUTH_SECRET` | ✅ | Same secret as the API (`npx auth secret`) |
+| `AUTH_URL` | ✅ | Production web URL, e.g. `https://slicing-edge.vercel.app` |
+| `AUTH_GOOGLE_ID` | ✅ | Google OAuth client ID |
+| `AUTH_GOOGLE_SECRET` | ✅ | Google OAuth client secret |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ✅ | Stripe publishable key (`pk_live_...`) |
+
+> **Google OAuth redirect URI:** Add `https://slicing-edge.vercel.app/api/auth/callback/google`
+> to your Google Cloud Console OAuth 2.0 credentials.
+
+---
+
+## 4. Deployment checklist
+
+### Pre-deploy
+
+- [ ] All environment variables set on both Railway and Vercel
+- [ ] Stripe webhook registered and `STRIPE_WEBHOOK_SECRET` updated
+- [ ] Google OAuth redirect URIs updated with production URL
+- [ ] Resend sender domain verified
+- [ ] `DATABASE_URL` accessible from Railway API service
+
+### Database
+
+- [ ] `npm run db:migrate:deploy` executed successfully
+- [ ] `npm run db:seed:prod` executed (optional — seeds demo products)
+
+### Post-deploy smoke tests
+
+- [ ] `GET /api/health` returns `{ status: "ok" }`
+- [ ] Homepage loads with products
+- [ ] Product detail page loads with images
+- [ ] User registration → welcome email received
+- [ ] Guest cart → Stripe checkout → order created
+- [ ] Stripe webhook triggers order confirmation email
+- [ ] Admin login → dashboard metrics visible
+- [ ] AI chatbot responds
+
+---
+
+## 5. Updating production images
+
+The production seed uses Unsplash CDN images as placeholders. To replace with real product photos:
+
+1. Log into the admin panel → Products → Edit
+2. Upload images via the **Upload Image** button (uses Cloudinary via `POST /api/admin/upload`)
+3. Or run a custom seed with your Cloudinary public IDs
+
+---
+
+## 6. Rollback
+
+Railway keeps previous deployments — click **Rollback** in the deploy history.
+Vercel keeps previous deployments — click **Promote** on any previous deployment.
+
+For database rollbacks, use `prisma migrate resolve` to mark a migration as rolled back,
+then manually revert schema changes. Always back up before deploying breaking schema changes.

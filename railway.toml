@@ -1,0 +1,14 @@
+# Railway service configuration for the Slicing Edge API.
+# Reference: https://docs.railway.com/reference/config-as-code
+#
+# The Dockerfile is located at apps/api/Dockerfile and uses the monorepo root
+# as its build context so it can copy all workspace packages.
+
+[build]
+dockerfilePath = "apps/api/Dockerfile"
+
+[deploy]
+healthcheckPath    = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType  = "ON_FAILURE"
+restartPolicyMaxRetries = 3

@@ -1,0 +1,42 @@
+# Dependencies — reinstalled inside the container
+node_modules
+apps/api/node_modules
+packages/*/node_modules
+
+# TypeScript build artifacts
+apps/api/dist
+apps/api/tsconfig.tsbuildinfo
+packages/*/tsconfig.tsbuildinfo
+
+# Next.js build output (web app, not relevant to API image)
+apps/web/.next
+apps/web/node_modules
+
+# Test files — not needed at runtime
+apps/api/src/__tests__
+**/*.test.ts
+**/*.spec.ts
+
+# Turbo cache
+.turbo
+**/.turbo
+
+# Git / IDE
+.git
+.gitignore
+.vscode
+.windsurf
+
+# Environment files — injected by Railway at runtime
+.env
+.env.*
+apps/api/.env
+apps/api/.env.*
+
+# Docs / markdown
+*.md
+docs/
+
+# Misc
+Dockerfile
+.dockerignore

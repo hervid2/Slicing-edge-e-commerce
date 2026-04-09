@@ -14,7 +14,9 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push",
-    "db:seed": "turbo db:seed"
+    "db:migrate:deploy": "npm run db:migrate:deploy --workspace=packages/db",
+    "db:seed": "turbo db:seed",
+    "db:seed:prod": "npm run db:seed:prod --workspace=packages/db"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

@@ -224,60 +224,62 @@ async function main() {
     },
   ];
 
-  const defaultImageUrl = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg';
+  // Production-quality images sourced from Unsplash (free for commercial use).
+  // Replace cloudinaryPublicId values with your own Cloudinary public IDs after
+  // uploading images via the admin upload endpoint (/api/admin/upload).
   const seedImageBySlug: Record<
     string,
     { url: string; publicId: string; altText: string }
   > = {
     'classic-chef-knife-8-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/classic-chef-knife-8-inch',
-      altText: 'Classic Chef Knife 8 inch',
+      altText: 'Classic Chef Knife 8 inch on a wooden cutting board',
     },
     'pro-chef-knife-10-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1541516160-6aa8395889ed?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/pro-chef-knife-10-inch',
-      altText: 'Pro Chef Knife 10 inch',
+      altText: 'Professional Chef Knife 10 inch with Damascus steel blade',
     },
     'santoku-knife-7-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1563699410-7ce7b0a4e3e8?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/santoku-knife-7-inch',
-      altText: 'Santoku Knife 7 inch',
+      altText: 'Japanese Santoku Knife 7 inch with Granton edge',
     },
     'mini-santoku-5-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1605789538893-3862d2fe0b7b?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/mini-santoku-5-inch',
-      altText: 'Mini Santoku 5 inch',
+      altText: 'Compact Mini Santoku Knife 5 inch',
     },
     'precision-paring-knife-3-5-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1583394293716-dc2e94a68b6d?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/precision-paring-knife-3-5-inch',
-      altText: 'Precision Paring Knife 3.5 inch',
+      altText: 'Precision Paring Knife 3.5 inch for detail work',
     },
     'birds-beak-paring-knife-2-5-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1583394293716-dc2e94a68b6d?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/birds-beak-paring-knife-2-5-inch',
-      altText: "Bird's Beak Paring Knife 2.5 inch",
+      altText: "Bird's Beak Paring Knife 2.5 inch with curved blade",
     },
     'artisan-bread-knife-9-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1574073479-3e7c7bf3c6d5?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/artisan-bread-knife-9-inch',
-      altText: 'Artisan Bread Knife 9 inch',
+      altText: 'Artisan Bread Knife 9 inch with serrated edge',
     },
     'flexible-fillet-knife-7-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/flexible-fillet-knife-7-inch',
-      altText: 'Flexible Fillet Knife 7 inch',
+      altText: 'Flexible Fillet Knife 7 inch with thin blade',
     },
     'heavy-duty-meat-cleaver-7-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1607827448387-a67db56b4992?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/heavy-duty-meat-cleaver-7-inch',
-      altText: 'Heavy Duty Meat Cleaver 7 inch',
+      altText: 'Heavy Duty Meat Cleaver 7 inch for bone splitting',
     },
     'chinese-vegetable-cleaver-8-inch': {
-      url: defaultImageUrl,
+      url: 'https://images.unsplash.com/photo-1535268244-7e35e9c4c067?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/chinese-vegetable-cleaver-8-inch',
-      altText: 'Chinese Vegetable Cleaver 8 inch',
+      altText: 'Chinese Vegetable Cleaver 8 inch for rapid prep',
     },
   };
 

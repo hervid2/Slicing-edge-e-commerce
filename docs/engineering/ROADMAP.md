@@ -202,12 +202,12 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Agregar CSP headers apropiados
 
 ### Día 20: Configuración de deploy
-- [ ] Crear `Dockerfile` o config para Railway (API)
-- [ ] Configurar `vercel.json` si es necesario (web)
-- [ ] Configurar variables de entorno en Railway + Vercel
-- [ ] Configurar PostgreSQL de producción (Railway o Neon)
-- [ ] `prisma migrate deploy` para producción
-- [ ] Seed de producción (categorías + productos con imágenes reales)
+- [x] Crear `Dockerfile` o config para Railway (API)
+- [x] Configurar `vercel.json` si es necesario (web)
+- [x] Configurar variables de entorno en Railway + Vercel
+- [x] Configurar PostgreSQL de producción (Railway o Neon)
+- [x] `prisma migrate deploy` para producción
+- [x] Seed de producción (categorías + productos con imágenes reales)
 
 ---
 
