@@ -91,6 +91,7 @@ After deploy, register the webhook in Stripe Dashboard:
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `NEXT_PUBLIC_API_URL` | ✅ | Railway API URL, e.g. `https://api.slicing-edge.up.railway.app` |
+| `NEXT_PUBLIC_APP_URL` | ✅ | This web app's canonical URL — used for OG images, sitemaps |
 | `AUTH_SECRET` | ✅ | Same secret as the API (`npx auth secret`) |
 | `AUTH_URL` | ✅ | Production web URL, e.g. `https://slicing-edge.vercel.app` |
 | `AUTH_GOOGLE_ID` | ✅ | Google OAuth client ID |
@@ -102,15 +103,66 @@ After deploy, register the webhook in Stripe Dashboard:
 
 ---
 
-## 4. Deployment checklist
+## 4. CI/CD — GitHub Actions
+
+The pipeline at `.github/workflows/deploy.yml` runs on every push to `main`:
+
+```
+push → test → build → deploy-api (Railway) ─┐
+                     → deploy-web (Vercel)  ─┴→ smoke-test
+```
+
+### Required GitHub secrets
+
+Go to **Settings → Secrets and variables → Actions** and add:
+
+| Secret | Where to find it |
+|--------|-----------------|
+| `RAILWAY_TOKEN` | Railway → Account Settings → Tokens |
+| `RAILWAY_SERVICE_ID` | Railway → service URL (`railway.app/project/.../service/<ID>`) |
+| `VERCEL_TOKEN` | Vercel → Settings → Tokens |
+| `VERCEL_ORG_ID` | Run `vercel link` locally → `.vercel/project.json → orgId` |
+| `VERCEL_PROJECT_ID` | Run `vercel link` locally → `.vercel/project.json → projectId` |
+| `DATABASE_URL` | Railway PostgreSQL → Variables tab |
+
+---
+
+## 5. Stripe webhook — staging setup
+
+1. In Stripe Dashboard → **Developers → Webhooks → Add endpoint**
+2. **Endpoint URL:** `https://<railway-staging-url>/api/checkout/webhook`
+3. **Events to send:**
+   - `checkout.session.completed`
+   - `payment_intent.payment_failed`
+4. Copy the **Signing secret** → set as `STRIPE_WEBHOOK_SECRET` in Railway variables
+
+> For local testing use `stripe listen --forward-to localhost:3001/api/checkout/webhook`.
+
+---
+
+## 6. Custom domain (optional)
+
+### Vercel
+1. Vercel project → **Settings → Domains** → add `slicing-edge.com`
+2. Add DNS records as shown by Vercel (CNAME or A record)
+3. Update `NEXT_PUBLIC_APP_URL`, `AUTH_URL`, and `ALLOWED_ORIGINS` with the new domain
+
+### Railway
+1. Railway service → **Settings → Networking → Custom Domain** → add `api.slicing-edge.com`
+2. Add CNAME `api` → Railway-provided hostname in your DNS provider
+3. Update `NEXT_PUBLIC_API_URL` in Vercel with the new API domain
+
+---
+
+## 7. Deployment checklist
 
 ### Pre-deploy
 
 - [ ] All environment variables set on both Railway and Vercel
+- [ ] GitHub Actions secrets set (`RAILWAY_TOKEN`, `RAILWAY_SERVICE_ID`, `VERCEL_TOKEN`, etc.)
 - [ ] Stripe webhook registered and `STRIPE_WEBHOOK_SECRET` updated
 - [ ] Google OAuth redirect URIs updated with production URL
 - [ ] Resend sender domain verified
-- [ ] `DATABASE_URL` accessible from Railway API service
 
 ### Database
 
@@ -119,6 +171,11 @@ After deploy, register the webhook in Stripe Dashboard:
 
 ### Post-deploy smoke tests
 
+Run manually: `API_URL=https://... WEB_URL=https://... bash scripts/smoke-test.sh`
+
+Or wait for the GitHub Actions `smoke-test` job to run automatically after each deploy.
+
+Key checks:
 - [ ] `GET /api/health` returns `{ status: "ok" }`
 - [ ] Homepage loads with products
 - [ ] Product detail page loads with images
@@ -130,7 +187,7 @@ After deploy, register the webhook in Stripe Dashboard:
 
 ---
 
-## 5. Updating production images
+## 8. Updating production images
 
 The production seed uses Unsplash CDN images as placeholders. To replace with real product photos:
 
@@ -140,7 +197,7 @@ The production seed uses Unsplash CDN images as placeholders. To replace with re
 
 ---
 
-## 6. Rollback
+## 9. Rollback
 
 Railway keeps previous deployments — click **Rollback** in the deploy history.
 Vercel keeps previous deployments — click **Promote** on any previous deployment.

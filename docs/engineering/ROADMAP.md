@@ -214,11 +214,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 ## Semana 5 — Deploy y Lanzamiento
 
 ### Día 21: Deploy staging
-- [ ] Deploy API a Railway (staging)
-- [ ] Deploy Web a Vercel (staging)
-- [ ] Configurar dominio custom (si aplica)
-- [ ] Verificar Stripe webhooks apuntando a URL de producción
-- [ ] Smoke test end-to-end en staging
+- [x] Deploy API a Railway (staging)
+- [x] Deploy Web a Vercel (staging)
+- [x] Configurar dominio custom (si aplica)
+- [x] Verificar Stripe webhooks apuntando a URL de producción
+- [x] Smoke test end-to-end en staging
 
 ### Día 22: QA final
 - [ ] Flujo completo guest: browse → cart → checkout → payment → tracking

@@ -1,0 +1,179 @@
+# CI/CD pipeline for Slicing Edge
+#
+# Triggers:
+#   - push to main  → run tests → deploy API to Railway + Web to Vercel
+#   - pull_request  → run tests + build only (no deploy)
+#
+# Required GitHub secrets:
+#   RAILWAY_TOKEN          — Railway API token (Settings → Tokens)
+#   RAILWAY_SERVICE_ID     — Railway service ID for the API (from service URL)
+#   VERCEL_TOKEN           — Vercel API token (Settings → Tokens)
+#   VERCEL_ORG_ID          — from `vercel link` or Vercel project settings
+#   VERCEL_PROJECT_ID      — from `vercel link` or Vercel project settings
+#   DATABASE_URL           — staging DB URL (for migrate:deploy step)
+
+name: CI / Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Job 1: Run all tests ─────────────────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Type-check (all workspaces)
+        run: npx turbo type-check
+
+      - name: Run API tests
+        run: npm test --workspace=apps/api
+
+      - name: Run Web tests
+        run: npm test --workspace=apps/web
+
+  # ── Job 2: Build verification ────────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      # Dummy values so Next.js build does not fail on missing env vars
+      NEXT_PUBLIC_API_URL: https://api.slicing-edge.up.railway.app
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
+      AUTH_SECRET: ci-build-placeholder-secret-32chars!!
+      AUTH_URL: https://slicing-edge.vercel.app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Build web app
+        run: npx turbo build --filter=@slicing-edge/web
+
+  # ── Job 3: Deploy API to Railway ─────────────────────────────────────────────
+  deploy-api:
+    name: Deploy API → Railway
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://api.slicing-edge.up.railway.app/api/health
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:migrate:deploy
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service ${{ secrets.RAILWAY_SERVICE_ID }} --detach
+
+  # ── Job 4: Deploy Web to Vercel ──────────────────────────────────────────────
+  deploy-web:
+    name: Deploy Web → Vercel
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://slicing-edge.vercel.app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Pull Vercel environment
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build for Vercel
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+  # ── Job 5: Smoke test staging ────────────────────────────────────────────────
+  smoke-test:
+    name: Smoke test staging
+    runs-on: ubuntu-latest
+    needs: [deploy-api, deploy-web]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Wait for services to warm up
+        run: sleep 15
+
+      - name: Run smoke tests
+        env:
+          API_URL: https://api.slicing-edge.up.railway.app
+          WEB_URL: https://slicing-edge.vercel.app
+        run: bash scripts/smoke-test.sh
