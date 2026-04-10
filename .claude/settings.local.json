@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(grep -l \"force-dynamic\\\\|no-store\" c:/ADSO/slicing_edge/apps/web/src/app/products/page.tsx c:/ADSO/slicing_edge/apps/web/src/app/products/[slug]/page.tsx c:/ADSO/slicing_edge/apps/web/src/app/orders/page.tsx c:/ADSO/slicing_edge/apps/web/src/app/wishlist/page.tsx)"
     ]
   }
 }
