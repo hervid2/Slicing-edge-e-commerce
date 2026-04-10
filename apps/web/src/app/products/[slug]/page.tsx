@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatPrice } from '@/lib/utils';
 import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
 import { AddToCartActions } from '@/components/product/add-to-cart-actions';
 import { ReviewSection } from '@/components/product/review-section';
 import { WishlistButton } from '@/components/product/wishlist-button';
