@@ -48,3 +48,6 @@ coverage
 # Functional and non functional requirements doc
 Slicing Edge FRNFR.docx
 
+# Deploy
+docs/engineering/SETUP-DEPLOY-GUIDE.md
+
