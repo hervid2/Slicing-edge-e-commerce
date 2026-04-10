@@ -12,7 +12,7 @@
     "type-check": "turbo type-check",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
-    "db:generate": "turbo db:generate",
+    "db:generate": "npm run db:generate --workspace=packages/db",
     "db:push": "turbo db:push",
     "db:migrate:deploy": "npm run db:migrate:deploy --workspace=packages/db",
     "db:seed": "turbo db:seed",
