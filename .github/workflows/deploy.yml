@@ -109,13 +109,9 @@ jobs:
         run: npm run db:migrate:deploy
         continue-on-error: true
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service ${{ secrets.RAILWAY_SERVICE_ID }} --detach
+      # Railway auto-deploys from GitHub on push to main via its native GitHub integration.
+      # No manual trigger needed here — the push that triggered this workflow also
+      # triggers Railway's own deployment pipeline.
 
   # ── Job 4: Deploy Web to Vercel ──────────────────────────────────────────────
   deploy-web:
