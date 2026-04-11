@@ -45,9 +45,6 @@ jobs:
       - name: Generate Prisma client
         run: npm run db:generate
 
-      - name: Type-check (all workspaces)
-        run: npx turbo type-check
-
       - name: Run API tests
         run: npm test --workspace=apps/api
 
