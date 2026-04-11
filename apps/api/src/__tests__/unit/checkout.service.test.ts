@@ -265,7 +265,8 @@ describe('CheckoutService', () => {
         statusHistory: [],
       };
 
-      prisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prisma.$transaction.mockImplementation(async (fn: any) => {
         const txMock = {
           order: { create: vi.fn().mockResolvedValue(createdOrder) },
           product: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
