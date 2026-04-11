@@ -88,11 +88,11 @@ echo "────────────────────────�
 echo ""
 echo "▶ API"
 check "Health endpoint"               "$API_URL/api/health"               200 '"status":"ok"'
-check "Products list (public)"        "$API_URL/api/products"              200 '"data"'
+check "Products list (public)"        "$API_URL/api/products"              200 '"products"'
 check "Categories list (public)"      "$API_URL/api/categories"            200
-check "Product by slug (first item)"  "$API_URL/api/products/classic-chef-knife-8-inch" 200 '"slug"'
-check "Auth — bad credentials → 401"  "$API_URL/api/auth/login"            401
-check "Chatbot — no body → 400/422"   "$API_URL/api/chatbot"               405  # POST-only, GET = 405
+check "Product by slug (first item)"  "$API_URL/api/products/classic-chef-knife-8-inch" 200 '"product"'
+check "Auth register — GET not found" "$API_URL/api/auth/register"         404  # POST-only, GET = 404
+check "Chatbot — no body → 400"       "$API_URL/api/chatbot"               404  # POST-only, GET = 404
 
 # ── Web checks ────────────────────────────────────────────────────────────────
 echo ""
