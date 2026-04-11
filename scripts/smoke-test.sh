@@ -104,7 +104,7 @@ check         "Cart page"             "$WEB_URL/cart"          200
 check         "Login page"            "$WEB_URL/auth/login"    200
 check         "Sitemap"               "$WEB_URL/sitemap.xml"   200
 check         "Robots"                "$WEB_URL/robots.txt"    200
-check_redirect "Product detail page"  "$WEB_URL/products/classic-chef-knife-8-inch"
+check         "Product detail page"   "$WEB_URL/products/classic-chef-knife-8-inch" 200
 
 # ── Security header checks ─────────────────────────────────────────────────────
 echo ""
