@@ -20,6 +20,7 @@ COPY package.json package-lock.json ./
 COPY apps/api/package.json            ./apps/api/
 COPY packages/config/                 ./packages/config/
 COPY packages/db/package.json         ./packages/db/
+COPY packages/db/prisma/              ./packages/db/prisma/
 COPY packages/shared/package.json     ./packages/shared/
 COPY packages/email/package.json      ./packages/email/
 
