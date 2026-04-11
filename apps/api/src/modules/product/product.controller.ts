@@ -32,8 +32,8 @@ export async function productRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              products: { type: 'array', items: { type: 'object' } },
-              pagination: { type: 'object' },
+              products: { type: 'array', items: { type: 'object', additionalProperties: true } },
+              pagination: { type: 'object', additionalProperties: true },
             },
           },
         },
@@ -57,7 +57,7 @@ export async function productRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              products: { type: 'array', items: { type: 'object' } },
+              products: { type: 'array', items: { type: 'object', additionalProperties: true } },
             },
           },
         },
@@ -87,7 +87,7 @@ export async function productRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              product: { type: 'object' },
+              product: { type: 'object', additionalProperties: true },
             },
           },
         },
@@ -141,7 +141,7 @@ export async function productRoutes(app: FastifyInstance) {
           201: {
             type: 'object',
             properties: {
-              product: { type: 'object' },
+              product: { type: 'object', additionalProperties: true },
             },
           },
         },
@@ -179,8 +179,8 @@ export async function productRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              products: { type: 'array', items: { type: 'object' } },
-              pagination: { type: 'object' },
+              products: { type: 'array', items: { type: 'object', additionalProperties: true } },
+              pagination: { type: 'object', additionalProperties: true },
             },
           },
         },
@@ -213,7 +213,7 @@ export async function productRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              product: { type: 'object' },
+              product: { type: 'object', additionalProperties: true },
             },
           },
         },
@@ -273,7 +273,7 @@ export async function productRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              product: { type: 'object' },
+              product: { type: 'object', additionalProperties: true },
             },
           },
         },
@@ -306,7 +306,7 @@ export async function productRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              product: { type: 'object' },
+              product: { type: 'object', additionalProperties: true },
             },
           },
         },

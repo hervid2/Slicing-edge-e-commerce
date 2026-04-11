@@ -17,7 +17,7 @@ export async function categoryRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              categories: { type: 'array', items: { type: 'object' } },
+              categories: { type: 'array', items: { type: 'object', additionalProperties: true } },
             },
           },
         },
@@ -51,7 +51,7 @@ export async function categoryRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              category: { type: 'object' },
+              category: { type: 'object', additionalProperties: true },
             },
           },
           404: {
@@ -100,7 +100,7 @@ export async function categoryRoutes(app: FastifyInstance) {
           201: {
             type: 'object',
             properties: {
-              category: { type: 'object' },
+              category: { type: 'object', additionalProperties: true },
             },
           },
         },
@@ -144,7 +144,7 @@ export async function categoryRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              category: { type: 'object' },
+              category: { type: 'object', additionalProperties: true },
             },
           },
         },
