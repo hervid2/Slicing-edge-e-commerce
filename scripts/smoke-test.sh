@@ -37,7 +37,7 @@ check() {
     --retry 3 \
     --retry-delay 3 \
     -H "Accept: application/json" \
-    "$url")
+    "$url") || { red "$label — curl failed (connection/SSL error)  ($url)"; FAIL=$((FAIL + 1)); return; }
 
   if [[ "$response" != "$expected_status" ]]; then
     red "$label — expected HTTP $expected_status, got $response  ($url)"
@@ -66,7 +66,7 @@ check_redirect() {
     --retry 3 \
     --retry-delay 3 \
     -L \
-    "$url")
+    "$url") || { red "$label — curl failed (connection/SSL error)  ($url)"; FAIL=$((FAIL + 1)); return; }
 
   if [[ "$status" == "200" ]]; then
     green "$label  ($url)"

@@ -89,7 +89,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: staging
-      url: https://api.slicing-edge.up.railway.app/api/health
+      url: https://slicing-edgeapi-production.up.railway.app/api/health
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -121,7 +121,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: staging
-      url: https://slicing-edge.vercel.app
+      url: https://slicing-edge-e-commerce-web.vercel.app
     steps:
       # Vercel auto-deploys from GitHub on push to main via its native GitHub integration.
       # Running `vercel build` locally in CI fails because Turbopack cannot resolve the
@@ -145,6 +145,6 @@ jobs:
 
       - name: Run smoke tests
         env:
-          API_URL: https://api.slicing-edge.up.railway.app
-          WEB_URL: https://slicing-edge.vercel.app
+          API_URL: https://slicing-edgeapi-production.up.railway.app
+          WEB_URL: https://slicing-edge-e-commerce-web.vercel.app
         run: bash scripts/smoke-test.sh
