@@ -224,7 +224,8 @@ async function main() {
     },
   ];
 
-  // Production-quality images sourced from Unsplash (free for commercial use).
+  // Production-quality images sourced from Pexels (free for commercial use, CC0).
+  // The classic chef knife retains its original Unsplash photo.
   // Replace cloudinaryPublicId values with your own Cloudinary public IDs after
   // uploading images via the admin upload endpoint (/api/admin/upload).
   const seedImageBySlug: Record<
@@ -232,54 +233,64 @@ async function main() {
     { url: string; publicId: string; altText: string }
   > = {
     'classic-chef-knife-8-inch': {
+      // Unsplash — verified working
       url: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop&q=80',
       publicId: 'seed/classic-chef-knife-8-inch',
       altText: 'Classic Chef Knife 8 inch on a wooden cutting board',
     },
     'pro-chef-knife-10-inch': {
-      url: 'https://images.unsplash.com/photo-1541516160-6aa8395889ed?w=800&h=600&fit=crop&q=80',
+      // Pexels 16603814 — Japanese artisan Damascus-style knives on dark background
+      url: 'https://images.pexels.com/photos/16603814/pexels-photo-16603814.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       publicId: 'seed/pro-chef-knife-10-inch',
       altText: 'Professional Chef Knife 10 inch with Damascus steel blade',
     },
     'santoku-knife-7-inch': {
-      url: 'https://images.unsplash.com/photo-1563699410-7ce7b0a4e3e8?w=800&h=600&fit=crop&q=80',
+      // Pexels 16457318 — Damascus steel santoku knife on wicker surface
+      url: 'https://images.pexels.com/photos/16457318/pexels-photo-16457318.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       publicId: 'seed/santoku-knife-7-inch',
-      altText: 'Japanese Santoku Knife 7 inch with Granton edge',
+      altText: 'Japanese Santoku Knife 7 inch with Damascus steel blade',
     },
     'mini-santoku-5-inch': {
-      url: 'https://images.unsplash.com/photo-1605789538893-3862d2fe0b7b?w=800&h=600&fit=crop&q=80',
+      // Pexels 4226864 — Clean kitchen knife on white surface (minimalist)
+      url: 'https://images.pexels.com/photos/4226864/pexels-photo-4226864.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       publicId: 'seed/mini-santoku-5-inch',
-      altText: 'Compact Mini Santoku Knife 5 inch',
+      altText: 'Compact Mini Santoku Knife 5 inch on white surface',
     },
     'precision-paring-knife-3-5-inch': {
-      url: 'https://images.unsplash.com/photo-1583394293716-dc2e94a68b6d?w=800&h=600&fit=crop&q=80',
+      // Pexels 16203855 — Close-up of knife cutting fresh tomatoes
+      url: 'https://images.pexels.com/photos/16203855/pexels-photo-16203855.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       publicId: 'seed/precision-paring-knife-3-5-inch',
-      altText: 'Precision Paring Knife 3.5 inch for detail work',
+      altText: 'Precision Paring Knife 3.5 inch slicing tomatoes',
     },
     'birds-beak-paring-knife-2-5-inch': {
-      url: 'https://images.unsplash.com/photo-1583394293716-dc2e94a68b6d?w=800&h=600&fit=crop&q=80',
+      // Pexels 6077638 — Knife with sliced vegetables on wooden board
+      url: 'https://images.pexels.com/photos/6077638/pexels-photo-6077638.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       publicId: 'seed/birds-beak-paring-knife-2-5-inch',
       altText: "Bird's Beak Paring Knife 2.5 inch with curved blade",
     },
     'artisan-bread-knife-9-inch': {
-      url: 'https://images.unsplash.com/photo-1574073479-3e7c7bf3c6d5?w=800&h=600&fit=crop&q=80',
+      // Pexels 7604435 — Serrated bread knife on wooden cutting board with loaf
+      url: 'https://images.pexels.com/photos/7604435/pexels-photo-7604435.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       publicId: 'seed/artisan-bread-knife-9-inch',
-      altText: 'Artisan Bread Knife 9 inch with serrated edge',
+      altText: 'Artisan Bread Knife 9 inch with serrated edge slicing bread',
     },
     'flexible-fillet-knife-7-inch': {
-      url: 'https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?w=800&h=600&fit=crop&q=80',
+      // Pexels 3296395 — Chef slicing fresh tuna fillet on wooden board
+      url: 'https://images.pexels.com/photos/3296395/pexels-photo-3296395.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       publicId: 'seed/flexible-fillet-knife-7-inch',
-      altText: 'Flexible Fillet Knife 7 inch with thin blade',
+      altText: 'Flexible Fillet Knife 7 inch slicing fresh fish',
     },
     'heavy-duty-meat-cleaver-7-inch': {
-      url: 'https://images.unsplash.com/photo-1607827448387-a67db56b4992?w=800&h=600&fit=crop&q=80',
+      // Pexels 31647676 — Butcher chopping raw meat at market table
+      url: 'https://images.pexels.com/photos/31647676/pexels-photo-31647676.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       publicId: 'seed/heavy-duty-meat-cleaver-7-inch',
-      altText: 'Heavy Duty Meat Cleaver 7 inch for bone splitting',
+      altText: 'Heavy Duty Meat Cleaver 7 inch chopping meat',
     },
     'chinese-vegetable-cleaver-8-inch': {
-      url: 'https://images.unsplash.com/photo-1535268244-7e35e9c4c067?w=800&h=600&fit=crop&q=80',
+      // Pexels 952478 — Chef knife on slate cutting board with fresh vegetables
+      url: 'https://images.pexels.com/photos/952478/pexels-photo-952478.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       publicId: 'seed/chinese-vegetable-cleaver-8-inch',
-      altText: 'Chinese Vegetable Cleaver 8 inch for rapid prep',
+      altText: 'Chinese Vegetable Cleaver 8 inch for rapid vegetable prep',
     },
   };
 

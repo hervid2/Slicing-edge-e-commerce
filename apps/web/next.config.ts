@@ -15,7 +15,7 @@ const CSP = [
   "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com",
+  "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://images.unsplash.com https://images.pexels.com",
   "connect-src 'self' http://localhost:3001 https://*.railway.app https://*.vercel.app",
   "frame-src https://js.stripe.com",
   "object-src 'none'",
@@ -59,6 +59,12 @@ const nextConfig: NextConfig = {
         // Unsplash CDN — used for production seed product images
         protocol: "https",
         hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      {
+        // Pexels CDN — used for production seed product images
+        protocol: "https",
+        hostname: "images.pexels.com",
         pathname: "/**",
       },
     ],
