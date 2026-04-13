@@ -23,14 +23,6 @@ export async function cartRoutes(app: FastifyInstance) {
             'x-session-id': { type: 'string' },
           },
         },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              cart: { type: 'object' },
-            },
-          },
-        },
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -61,14 +53,6 @@ export async function cartRoutes(app: FastifyInstance) {
           properties: {
             productId: { type: 'string' },
             quantity: { type: 'integer', minimum: 1 },
-          },
-        },
-        response: {
-          201: {
-            type: 'object',
-            properties: {
-              item: { type: 'object' },
-            },
           },
         },
       },

@@ -75,7 +75,7 @@ async function request<T>(path: string, init: RequestInit, sessionId: string) {
 }
 
 export function mapCartItems(cart: ApiCart | null | undefined): CartUiItem[] {
-  if (!cart) return [];
+  if (!cart || !Array.isArray(cart.items)) return [];
 
   return cart.items.map((item) => ({
     id: item.id,
