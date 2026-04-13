@@ -7,6 +7,7 @@ import { getSession, signOut } from 'next-auth/react';
 import { MobileNav } from './mobile-nav';
 import { CartButton } from './cart-button';
 import { SearchModal } from '@/components/search/search-modal';
+import { Logo } from '@/components/ui/logo';
 
 const navLinks = [
   { href: '/products', label: 'Shop' },
@@ -53,11 +54,8 @@ export function Header() {
         </button>
 
         {/* Logo */}
-        <Link
-          href="/"
-          className="font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)] sm:text-2xl"
-        >
-          Slicing Edge
+        <Link href="/" aria-label="Slicing Edge — Home">
+          <Logo theme="dark" className="h-9 w-auto" />
         </Link>
 
         {/* Desktop navigation */}

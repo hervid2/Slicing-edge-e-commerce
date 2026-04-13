@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Logo } from '@/components/ui/logo';
 
 const footerLinks = {
   shop: [
@@ -28,11 +29,8 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div>
-            <Link
-              href="/"
-              className="font-[family-name:var(--font-heading)] text-2xl font-bold"
-            >
-              Slicing Edge
+            <Link href="/" aria-label="Slicing Edge — Home">
+              <Logo theme="light" className="h-10 w-auto" />
             </Link>
             <p className="mt-4 text-sm text-white/70">
               Handcrafted premium kitchen knives for culinary professionals and

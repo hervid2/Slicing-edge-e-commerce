@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc:*)",
-      "Bash(grep -l \"force-dynamic\\\\|no-store\" c:/ADSO/slicing_edge/apps/web/src/app/products/page.tsx c:/ADSO/slicing_edge/apps/web/src/app/products/[slug]/page.tsx c:/ADSO/slicing_edge/apps/web/src/app/orders/page.tsx c:/ADSO/slicing_edge/apps/web/src/app/wishlist/page.tsx)"
+      "Bash(grep -l \"force-dynamic\\\\|no-store\" c:/ADSO/slicing_edge/apps/web/src/app/products/page.tsx c:/ADSO/slicing_edge/apps/web/src/app/products/[slug]/page.tsx c:/ADSO/slicing_edge/apps/web/src/app/orders/page.tsx c:/ADSO/slicing_edge/apps/web/src/app/wishlist/page.tsx)",
+      "WebFetch(domain:unsplash.com)",
+      "WebSearch",
+      "WebFetch(domain:images.unsplash.com)",
+      "WebFetch(domain:misen.com)",
+      "WebFetch(domain:www.webstaurantstore.com)",
+      "WebFetch(domain:kamikoto.com)",
+      "WebFetch(domain:madeincookware.com)",
+      "WebFetch(domain:www.everythingkitchens.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.pexels.com)",
+      "WebFetch(domain:images.pexels.com)"
     ]
   }
 }
