@@ -192,9 +192,12 @@ export class CheckoutService {
     const currency = input.currency.toLowerCase();
     const params = new URLSearchParams();
 
+    const successParams = new URLSearchParams({ order: input.orderNumber });
+    if (input.customerEmail) successParams.set('email', input.customerEmail);
+
     params.append('mode', 'payment');
-    params.append('success_url', `${frontendUrl}/orders?orderNumber=${input.orderNumber}`);
-    params.append('cancel_url', `${frontendUrl}/checkout?cancelled=1`);
+    params.append('success_url', `${frontendUrl}/checkout/success?${successParams.toString()}`);
+    params.append('cancel_url', `${frontendUrl}/checkout/success?status=cancelled&order=${input.orderNumber}`);
     params.append('metadata[orderId]', input.orderId);
     params.append('payment_intent_data[metadata][orderId]', input.orderId);
 

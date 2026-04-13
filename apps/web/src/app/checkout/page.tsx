@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
+import { ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cart-store';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -243,13 +245,37 @@ export default function CheckoutPage() {
 
         <aside className="h-fit rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-6 lg:col-span-1">
           <h2 className="font-semibold text-[var(--color-primary)]">Order Summary</h2>
-          <div className="mt-4 space-y-2 text-sm">
+          <div className="mt-4 space-y-3">
             {items.map((item) => (
-              <div key={item.productId} className="flex justify-between">
-                <span>
-                  {item.name} x{item.quantity}
-                </span>
-                <span>{formatPrice(item.price * item.quantity)}</span>
+              <div key={item.productId} className="flex items-center gap-3">
+                {/* Product thumbnail */}
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-[var(--color-border)] bg-[var(--color-background)]">
+                  {item.imageUrl ? (
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                      sizes="56px"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <ShoppingBag className="h-5 w-5 text-[var(--color-muted)]" />
+                    </div>
+                  )}
+                  {/* Quantity badge */}
+                  <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-primary)] text-[10px] font-bold text-white">
+                    {item.quantity}
+                  </span>
+                </div>
+
+                {/* Name + price */}
+                <div className="flex flex-1 items-start justify-between gap-2 text-sm">
+                  <span className="line-clamp-2 text-[var(--color-foreground)]">{item.name}</span>
+                  <span className="shrink-0 font-medium text-[var(--color-primary)]">
+                    {formatPrice(item.price * item.quantity)}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
