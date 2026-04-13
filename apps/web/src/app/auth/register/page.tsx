@@ -47,6 +47,28 @@ export default function RegisterPage() {
         return;
       }
 
+      const Swal = (await import('sweetalert2')).default;
+      await Swal.fire({
+        icon: 'success',
+        title: 'Account created!',
+        html: `Welcome to <strong>Slicing Edge</strong>.<br/>You can now sign in with your credentials.`,
+        confirmButtonText: 'Go to Sign In',
+        confirmButtonColor: '#1A3A2A',
+        background: '#ffffff',
+        color: '#1A1A1A',
+        iconColor: '#3D8B4F',
+        customClass: {
+          popup: 'rounded-2xl',
+          confirmButton: 'rounded-lg px-6 py-2 text-sm font-medium',
+        },
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown animate__faster',
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp animate__faster',
+        },
+      });
+
       router.push('/auth/login?registered=true');
     } catch {
       setServerError('Something went wrong. Please try again.');
