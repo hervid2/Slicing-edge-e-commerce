@@ -80,6 +80,12 @@ vi.mock('@/lib/auth-client', () => ({
   signInWithGoogle: vi.fn(),
 }));
 
+vi.mock('sweetalert2', () => ({
+  default: {
+    fire: vi.fn().mockResolvedValue({ isConfirmed: true }),
+  },
+}));
+
 import { useRouter } from 'next/navigation';
 import RegisterPage from '@/app/auth/register/page';
 
