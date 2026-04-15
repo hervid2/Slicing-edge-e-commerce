@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle, XCircle, Search, ShoppingBag, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
@@ -44,15 +44,13 @@ function CheckoutSuccessContent() {
         )}
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button asChild size="lg">
-            <Link href="/checkout">
-              <ShoppingBag className="mr-2 h-4 w-4" />
-              Try Again
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/products">Continue Shopping</Link>
-          </Button>
+          <Link href="/checkout" className={buttonVariants({ size: 'lg' })}>
+            <ShoppingBag className="mr-2 h-4 w-4" />
+            Try Again
+          </Link>
+          <Link href="/products" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
+            Continue Shopping
+          </Link>
         </div>
 
         <p className="mt-8 text-sm text-[var(--color-muted)]">
@@ -105,15 +103,13 @@ function CheckoutSuccessContent() {
 
       {/* CTAs */}
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <Button asChild size="lg">
-          <Link href={trackingHref}>
-            <Search className="mr-2 h-4 w-4" />
-            Track Your Order
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="lg">
-          <Link href="/products">Continue Shopping</Link>
-        </Button>
+        <Link href={trackingHref} className={buttonVariants({ size: 'lg' })}>
+          <Search className="mr-2 h-4 w-4" />
+          Track Your Order
+        </Link>
+        <Link href="/products" className={buttonVariants({ variant: 'outline', size: 'lg' })}>
+          Continue Shopping
+        </Link>
       </div>
     </div>
   );
