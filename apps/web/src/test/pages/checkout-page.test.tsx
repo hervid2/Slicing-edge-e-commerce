@@ -149,7 +149,10 @@ describe('CheckoutPage', () => {
   it('shows order summary items', async () => {
     render(<CheckoutPage />);
     await waitFor(() => {
-      expect(screen.getByText(/chef knife x1/i)).toBeInTheDocument();
+      // Name and quantity are in separate elements since the thumbnail redesign:
+      // product name in a text span, quantity as a badge on the image thumbnail.
+      expect(screen.getByText('Chef Knife')).toBeInTheDocument();
+      expect(screen.getByText('1')).toBeInTheDocument();
     });
   });
 
