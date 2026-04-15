@@ -119,7 +119,20 @@ function ReviewForm({ productId, onSubmitted }: ReviewFormProps) {
         );
       }
 
-      onSubmitted((data as { review: Review }).review);
+      // Build the review locally to guarantee correct shape regardless of
+      // what the API serializer returns for the nested `user` field.
+      const reviewId = (data as { review?: { id?: string } }).review?.id ?? `temp-${Date.now()}`;
+      const newReview: Review = {
+        id: reviewId,
+        rating,
+        comment: comment.trim(),
+        createdAt: new Date().toISOString(),
+        user: {
+          name: session?.user?.name ?? null,
+          image: (session?.user as { image?: string | null } | undefined)?.image ?? null,
+        },
+      };
+      onSubmitted(newReview);
       setRating(0);
       setComment('');
     } catch (err) {
