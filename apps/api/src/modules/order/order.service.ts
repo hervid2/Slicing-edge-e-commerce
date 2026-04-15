@@ -31,16 +31,19 @@ export class OrderService {
   }
 
   /**
-   * Returns a single order by order number, optionally constrained by guest email.
+   * Returns a single order by order number, optionally constrained by email.
+   * Matches against both guestEmail (guest orders) and user.email (authenticated orders).
    *
    * @throws {AppError} When no matching order is found.
    */
   async getOrderByNumber(orderNumber: string, email?: string) {
-    const where: { orderNumber: string; guestEmail?: string } = { orderNumber };
-    if (email) where.guestEmail = email;
-
     const order = await this.prisma.order.findFirst({
-      where,
+      where: email
+        ? {
+            orderNumber,
+            OR: [{ guestEmail: email }, { user: { email } }],
+          }
+        : { orderNumber },
       include: {
         items: true,
         statusHistory: { orderBy: { createdAt: 'desc' } },

@@ -398,8 +398,17 @@ export class CheckoutService {
               tax: order.tax,
               total: order.total,
             });
-          } catch {
-            // Do not fail webhook acknowledgment for email delivery issues.
+          } catch (emailError) {
+            // Do not fail webhook acknowledgment for email delivery issues,
+            // but log the error so it can be diagnosed in Railway logs.
+            console.error(
+              JSON.stringify({
+                message: 'Failed to send order confirmation email',
+                orderNumber: order.orderNumber,
+                customerEmail,
+                error: emailError instanceof Error ? emailError.message : String(emailError),
+              }),
+            );
           }
         }
 
