@@ -159,7 +159,7 @@ export default function OrdersPage() {
           <div className="mt-6">
             <h2 className="font-semibold text-[var(--color-primary)]">Items</h2>
             <ul className="mt-3 space-y-2 text-sm">
-              {order.items.map((item) => (
+              {(order.items ?? []).map((item) => (
                 <li key={item.id} className="flex justify-between border-b border-[var(--color-border)] pb-2">
                   <span>{item.productName} x{item.quantity}</span>
                   <span>${Number(item.productPrice).toFixed(2)}</span>
@@ -178,7 +178,7 @@ export default function OrdersPage() {
           <div className="mt-6">
             <h3 className="font-semibold text-[var(--color-primary)]">Status Timeline</h3>
             <ol className="mt-3 space-y-3">
-              {order.statusHistory.map((entry) => (
+              {(order.statusHistory ?? []).map((entry) => (
                 <li key={entry.id} className="flex items-start gap-3 text-sm">
                   <span className="mt-1 h-2 w-2 rounded-full bg-[var(--color-accent)]" />
                   <div>

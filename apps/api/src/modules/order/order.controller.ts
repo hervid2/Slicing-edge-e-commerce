@@ -22,7 +22,7 @@ export async function orderRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              orders: { type: 'array', items: { type: 'object' } },
+              orders: { type: 'array', items: { type: 'object', additionalProperties: true } },
             },
           },
         },
@@ -53,7 +53,7 @@ export async function orderRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              order: { type: 'object' },
+              order: { type: 'object', additionalProperties: true },
             },
           },
         },
@@ -86,8 +86,8 @@ export async function orderRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              orders: { type: 'array', items: { type: 'object' } },
-              pagination: { type: 'object' },
+              orders: { type: 'array', items: { type: 'object', additionalProperties: true } },
+              pagination: { type: 'object', additionalProperties: true },
             },
           },
         },
@@ -129,7 +129,7 @@ export async function orderRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              order: { type: 'object' },
+              order: { type: 'object', additionalProperties: true },
             },
           },
         },

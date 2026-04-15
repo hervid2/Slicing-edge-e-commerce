@@ -79,7 +79,7 @@ export async function reviewRoutes(app: FastifyInstance) {
         response: {
           201: {
             type: 'object',
-            properties: { review: { type: 'object' } },
+            properties: { review: { type: 'object', additionalProperties: true } },
           },
         },
       },
