@@ -65,6 +65,7 @@ describe('ProductCard', () => {
     vi.mocked(useWishlist).mockReturnValue({
       wishlistedIds: new Set(),
       toggle: mockToggle,
+      loading: false,
     });
     vi.mocked(useToast).mockReturnValue({ toast: mockToast });
     mockToast.mockClear();
@@ -155,6 +156,7 @@ describe('ProductCard', () => {
     vi.mocked(useWishlist).mockReturnValue({
       wishlistedIds: new Set(['prod-1']),
       toggle: mockToggle,
+      loading: false,
     });
     render(<ProductCard {...defaultProps} />);
     expect(screen.getByRole('button', { name: /remove from wishlist/i })).toBeInTheDocument();

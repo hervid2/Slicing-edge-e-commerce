@@ -93,7 +93,7 @@ const mockPush = vi.fn();
 
 describe('RegisterPage', () => {
   beforeEach(() => {
-    vi.mocked(useRouter).mockReturnValue({ push: mockPush } as ReturnType<typeof useRouter>);
+    vi.mocked(useRouter).mockReturnValue({ push: mockPush } as unknown as ReturnType<typeof useRouter>);
     global.fetch = vi.fn();
     mockPush.mockClear();
   });

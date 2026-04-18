@@ -133,7 +133,8 @@ describe('LoginPage', () => {
   });
 
   it('calls signIn with email and password on submit', async () => {
-    vi.mocked(authClient.signIn).mockResolvedValue(undefined);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(authClient.signIn).mockResolvedValue(undefined as any);
 
     render(<LoginPage />);
 

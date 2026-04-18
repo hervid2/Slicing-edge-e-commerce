@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+const isProd = process.env.NODE_ENV === 'production';
+
+// API origin allowed by connect-src.
+// In production the env var holds the Railway URL; in dev fall back to localhost.
+const apiOrigin = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
 /**
  * Content-Security-Policy for the web app.
  *
@@ -16,7 +22,8 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://images.unsplash.com https://images.pexels.com",
-  "connect-src 'self' http://localhost:3001 https://*.railway.app https://*.vercel.app",
+  // In production only the configured API URL is needed; localhost kept for dev.
+  `connect-src 'self' ${apiOrigin}${isProd ? '' : ' http://localhost:3001'}`,
   "frame-src https://js.stripe.com",
   "object-src 'none'",
   "base-uri 'self'",

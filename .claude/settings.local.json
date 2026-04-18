@@ -16,7 +16,11 @@
       "WebFetch(domain:images.pexels.com)",
       "Bash(npx turbo *)",
       "Bash(npm test *)",
-      "Bash(npx playwright *)"
+      "Bash(npx playwright *)",
+      "Bash(ls c:/ADSO/slicing_edge/apps/web/.env* c:/ADSO/slicing_edge/apps/api/.env*)",
+      "Bash(ls c:/ADSO/slicing_edge/.env*)",
+      "Bash(ls c:/ADSO/slicing_edge/apps/api/railway*)",
+      "Bash(ls c:/ADSO/slicing_edge/*.json)"
     ]
   }
 }

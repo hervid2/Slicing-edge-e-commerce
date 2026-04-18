@@ -79,9 +79,9 @@ const sampleItems = [
 
 describe('CheckoutPage', () => {
   beforeEach(() => {
-    vi.mocked(useRouter).mockReturnValue({ push: mockPush } as ReturnType<typeof useRouter>);
+    vi.mocked(useRouter).mockReturnValue({ push: mockPush } as unknown as ReturnType<typeof useRouter>);
     vi.mocked(useSession).mockReturnValue({ status: 'unauthenticated', data: null, update: vi.fn() });
-    vi.mocked(getCart).mockResolvedValue({ cart: [] });
+    vi.mocked(getCart).mockResolvedValue({ cart: { id: 'cart-1', items: [] } } as Awaited<ReturnType<typeof getCart>>);
     vi.mocked(mapCartItems).mockReturnValue(sampleItems);
     vi.mocked(useCartStore).mockReturnValue({
       items: sampleItems,
@@ -190,6 +190,7 @@ describe('CheckoutPage', () => {
 
   it('redirects to Stripe when checkoutUrl is returned', async () => {
     vi.mocked(createCheckout).mockResolvedValue({
+      order: { orderNumber: 'SE-00001' },
       checkoutUrl: 'https://stripe.com/checkout/test',
     });
 

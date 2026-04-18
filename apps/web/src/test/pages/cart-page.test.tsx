@@ -72,7 +72,7 @@ const sampleItems = [
 describe('CartPage', () => {
   beforeEach(() => {
     vi.mocked(useToast).mockReturnValue({ toast: mockToast });
-    vi.mocked(getCart).mockResolvedValue({ cart: [] });
+    vi.mocked(getCart).mockResolvedValue({ cart: { id: 'cart-1', items: [] } } as Awaited<ReturnType<typeof getCart>>);
     vi.mocked(mapCartItems).mockReturnValue([]);
     mockToast.mockClear();
     mockSetItems.mockClear();
@@ -196,7 +196,7 @@ describe('CartPage', () => {
       getItemCount: vi.fn(() => 3),
     });
     vi.mocked(removeCartItem).mockResolvedValue(undefined);
-    vi.mocked(getCart).mockResolvedValue({ cart: [] });
+    vi.mocked(getCart).mockResolvedValue({ cart: { id: 'cart-1', items: [] } } as Awaited<ReturnType<typeof getCart>>);
     vi.mocked(mapCartItems).mockReturnValue([]);
 
     render(<CartPage />);
@@ -239,8 +239,8 @@ describe('CartPage', () => {
       getTotal: vi.fn(() => 169.97),
       getItemCount: vi.fn(() => 3),
     });
-    vi.mocked(updateCartItem).mockResolvedValue(undefined);
-    vi.mocked(getCart).mockResolvedValue({ cart: [] });
+    vi.mocked(updateCartItem).mockResolvedValue({ item: {} });
+    vi.mocked(getCart).mockResolvedValue({ cart: { id: 'cart-1', items: [] } } as Awaited<ReturnType<typeof getCart>>);
     vi.mocked(mapCartItems).mockReturnValue(sampleItems);
 
     render(<CartPage />);

@@ -229,11 +229,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Mobile QA en dispositivos reales
 
 ### Día 23: Fixes y deploy a producción
-- [ ] Corregir bugs encontrados en QA
-- [ ] Deploy API a Railway (production)
-- [ ] Deploy Web a Vercel (production)
-- [ ] Verificar SSL, redirects, y headers de seguridad
-- [ ] Stripe: activar modo live (si aplica) o mantener test mode
+- [x] Corregir bugs encontrados en QA
+- [x] Deploy API a Railway (production)
+- [x] Deploy Web a Vercel (production)
+- [x] Verificar SSL, redirects, y headers de seguridad
+- [x] Stripe: activar modo live (si aplica) o mantener test mode
 
 ### Día 24: Documentación final
 - [ ] Actualizar `README.md` con instrucciones de deploy
