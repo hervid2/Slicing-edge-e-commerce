@@ -14,7 +14,7 @@ You help customers:
 Be concise, friendly, and product-focused. When recommending products, use the available tools to fetch real catalog data.
 If a customer asks to track an order, ask for their order number (format: SE-XXXXX-XXXXXX) and email if needed.`;
 
-const MODEL = 'llama3-groq-70b-8192-tool-use-preview';
+const MODEL = 'llama-3.3-70b-versatile';
 
 /** Groq tool definitions (OpenAI function-calling format). */
 const TOOLS: Groq.Chat.ChatCompletionTool[] = [
@@ -333,7 +333,42 @@ export class ChatbotService {
 
       return { reply, products: allProducts };
     } catch (err) {
-      logger.error({ err }, 'chatbot Groq API call failed');
+      // When the model fails to generate a valid tool call, retry without tools
+      const isToolUseFailed =
+        typeof err === 'object' &&
+        err !== null &&
+        'status' in err &&
+        (err as { status: number }).status === 400 &&
+        JSON.stringify(err).includes('tool_use_failed');
+
+      if (isToolUseFailed) {
+        logger.warn({ err }, 'chatbot tool_use_failed — retrying without tools');
+        try {
+          const fallback = await client.chat.completions.create({
+            model: MODEL,
+            max_tokens: 1024,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              ...input.history.map((h) => ({
+                role: h.role as 'user' | 'assistant',
+                content: h.content,
+              })),
+              { role: 'user', content: input.message },
+            ],
+          });
+          return {
+            reply:
+              fallback.choices[0]?.message?.content ??
+              'I could not generate a response. Please try again.',
+            products: [],
+          };
+        } catch (fallbackErr) {
+          logger.error({ fallbackErr }, 'chatbot fallback without tools also failed');
+        }
+      } else {
+        logger.error({ err }, 'chatbot Groq API call failed');
+      }
+
       return {
         reply: 'Sorry, the assistant is temporarily unavailable. Please try again later.',
         products: [],
