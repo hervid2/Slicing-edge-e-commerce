@@ -243,11 +243,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Screenshots/GIFs del proyecto para portfolio
 
 ### Día 25 (buffer): Refinamiento
-- [ ] Performance: analizar Core Web Vitals y optimizar
-- [ ] Caché: configurar ISR/revalidación óptima en Next.js
-- [ ] Monitoreo: configurar error tracking (Sentry o similar)
-- [ ] Analytics: Google Analytics o Vercel Analytics
-- [ ] Revisión final del código y cleanup
+- [x] Performance: analizar Core Web Vitals y optimizar
+- [x] Caché: configurar ISR/revalidación óptima en Next.js
+- [x] Monitoreo: configurar error tracking (Sentry o similar)
+- [x] Analytics: Google Analytics o Vercel Analytics
+- [x] Revisión final del código y cleanup
 
 ---
 

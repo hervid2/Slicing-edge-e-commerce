@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Header, Footer } from "@/components/layout";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { WishlistProvider } from "@/components/providers/wishlist-provider";
@@ -74,6 +76,10 @@ export default function RootLayout({
             </WishlistProvider>
           </ToastProvider>
         </AuthSessionProvider>
+        {/* Vercel Analytics — tracks page views and custom events */}
+        <Analytics />
+        {/* Vercel Speed Insights — collects Core Web Vitals data */}
+        <SpeedInsights />
       </body>
     </html>
   );

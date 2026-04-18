@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -18,12 +19,12 @@ const apiOrigin = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
  */
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com",
+  "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://browser.sentry-cdn.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://images.unsplash.com https://images.pexels.com",
   // In production only the configured API URL is needed; localhost kept for dev.
-  `connect-src 'self' ${apiOrigin}${isProd ? '' : ' http://localhost:3001'}`,
+  `connect-src 'self' ${apiOrigin}${isProd ? '' : ' http://localhost:3001'} https://*.sentry.io https://vitals.vercel-insights.com`,
   "frame-src https://js.stripe.com",
   "object-src 'none'",
   "base-uri 'self'",
@@ -87,4 +88,22 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Suppress the Sentry CLI output during builds (keeps CI logs clean).
+  silent: !process.env.CI,
+
+  // Automatically tree-shake Sentry logger statements in production.
+  disableLogger: true,
+
+  // Upload source maps only when SENTRY_AUTH_TOKEN is present (CI / Vercel).
+  // Local dev builds skip the upload step silently.
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Tunnel Sentry requests through Next.js to avoid ad-blockers.
+  tunnelRoute: "/monitoring",
+
+  // Hide source map files from the browser (uploaded to Sentry, not served).
+  hideSourceMaps: true,
+});

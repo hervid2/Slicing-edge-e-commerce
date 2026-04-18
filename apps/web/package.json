@@ -16,9 +16,12 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.49.0",
     "@slicing-edge/db": "*",
     "@slicing-edge/shared": "*",
     "@tanstack/react-query": "^5.62.0",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

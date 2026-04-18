@@ -4,7 +4,9 @@ import { notFound } from 'next/navigation';
 import { formatPrice } from '@/lib/utils';
 import type { Metadata } from 'next';
 
-export const dynamic = 'force-dynamic';
+/** ISR: revalidate product pages every 60 s; Next.js re-fetches in the background */
+export const revalidate = 60;
+
 import { AddToCartActions } from '@/components/product/add-to-cart-actions';
 import { ReviewSection } from '@/components/product/review-section';
 import { WishlistButton } from '@/components/product/wishlist-button';
@@ -39,6 +41,23 @@ interface ProductDetail {
   category: { name: string; slug: string };
   images: ProductImage[];
   reviews: Review[];
+}
+
+/**
+ * Pre-render all known product slugs at build time so they benefit from ISR
+ * instead of being rendered cold on every first request.
+ */
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(`${API_URL}/api/products?limit=200`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.products ?? []).map((p: { slug: string }) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
 }
 
 async function getProduct(slug: string): Promise<ProductDetail | null> {

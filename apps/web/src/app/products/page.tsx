@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ProductCard } from '@/components/product/product-card';
 
+/** Must be dynamic — page reads searchParams for filtering/search/pagination */
 export const dynamic = 'force-dynamic';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
