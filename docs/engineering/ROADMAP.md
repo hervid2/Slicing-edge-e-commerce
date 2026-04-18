@@ -49,7 +49,7 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 | 6 | Admin: usuarios, métricas dashboard | Media |
 | 7 | Búsqueda funcional (header search) | Media |
 | 8 | Imágenes de producto con Cloudinary | Alta |
-| 9 | AI Chatbot (Anthropic Claude) | Baja |
+| 9 | AI Chatbot (Groq — Llama 3.3 70B) | Baja |
 | 10 | Cart merge guest→user al hacer login | Media |
 | 11 | Página de perfil/cuenta del usuario | Media |
 | 12 | Order history para usuarios autenticados (frontend) | Media |
@@ -153,7 +153,7 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 
 ### Día 13: AI Chatbot — Backend
 - [x] Crear módulo `chatbot` en API: `POST /api/chatbot`
-- [x] Integrar Anthropic Claude con tool-use pattern
+- [x] Integrar Groq (Llama 3.3 70B) con tool-use pattern
 - [x] Tools: buscar productos, recomendar por categoría, rastrear orden
 - [x] Rate-limit específico para chatbot endpoint
 
@@ -257,4 +257,4 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - **Prioridad**: Si hay limitaciones de tiempo, las semanas 1-2 + deploy (día 20-23) son el MVP funcional
 - **AI Chatbot** (días 13-14) puede posponerse si el tiempo es limitado
 - **Upstash Redis** (día 19) es opcional si el rate-limit básico de Fastify es suficiente
-- El plan asume que las API keys de Stripe, Resend, Cloudinary, Google OAuth y Anthropic están configuradas
+- El plan asume que las API keys de Stripe, Resend, Cloudinary, Google OAuth y Groq están configuradas

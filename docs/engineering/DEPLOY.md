@@ -13,7 +13,7 @@ Vercel (Next.js)  ──→  Railway (Fastify API)  ──→  Railway PostgreSQ
                          Cloudinary CDN
                          Stripe (webhooks)
                          Resend (email)
-                         Anthropic Claude (AI)
+                         Groq AI (chatbot)
 ```
 
 ---

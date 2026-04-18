@@ -91,13 +91,13 @@ Used by `POST /api/admin/upload` to upload product images. Uploaded URLs are sto
 
 ---
 
-### Anthropic (AI Chatbot)
+### Groq (AI Chatbot)
 
 | Variable | Service | Required | Description |
 |----------|---------|----------|-------------|
-| `ANTHROPIC_API_KEY` | API | ✅ | From console.anthropic.com → API Keys. Server-side only — never sent to browser. |
+| `GROQ_API_KEY` | API | ✅ | From console.groq.com → API Keys. Server-side only — never sent to browser. Free tier available. |
 
-Used by `POST /api/chatbot`. The API holds the key and proxies all Claude calls.
+Used by `POST /api/chatbot`. The API holds the key and proxies all Groq (Llama 3.3 70B) calls.
 
 ---
 

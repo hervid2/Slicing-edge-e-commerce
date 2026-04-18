@@ -13,7 +13,7 @@ E-commerce platform for premium kitchen knives. Turborepo monorepo with Next.js 
 - **Rate Limiting**: Upstash Redis + `@upstash/ratelimit`
 - **Validation**: Zod (shared schemas in `packages/shared`)
 - **Logging**: Pino (structured, with redaction)
-- **AI Chatbot**: Anthropic Claude API (server-side only, tool-use pattern)
+- **AI Chatbot**: Groq API — Llama 3.3 70B (server-side only, tool-use pattern)
 
 ## Design System
 - **Primary**: `#1A3A2A` (deep forest green)

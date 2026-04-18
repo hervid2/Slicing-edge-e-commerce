@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import Groq from 'groq-sdk';
 import pino from 'pino';
 import type { PrismaClient } from '@slicing-edge/db';
 import type { ChatbotMessageInput } from '@slicing-edge/shared';
@@ -14,63 +14,74 @@ You help customers:
 Be concise, friendly, and product-focused. When recommending products, use the available tools to fetch real catalog data.
 If a customer asks to track an order, ask for their order number (format: SE-XXXXX-XXXXXX) and email if needed.`;
 
-/** Anthropic tool definitions for the chatbot agentic loop. */
-const TOOLS: Anthropic.Tool[] = [
+const MODEL = 'llama-3.3-70b-versatile';
+
+/** Groq tool definitions (OpenAI function-calling format). */
+const TOOLS: Groq.Chat.ChatCompletionTool[] = [
   {
-    name: 'search_products',
-    description:
-      'Search for products in the catalog by keyword. Use this when a customer describes what they are looking for.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description: 'Search keyword to match against product name or description',
+    type: 'function',
+    function: {
+      name: 'search_products',
+      description:
+        'Search for products in the catalog by keyword. Use this when a customer describes what they are looking for.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Search keyword to match against product name or description',
+          },
+          limit: {
+            type: 'number',
+            description: 'Maximum number of products to return (default: 5, max: 10)',
+          },
         },
-        limit: {
-          type: 'number',
-          description: 'Maximum number of products to return (default: 5, max: 10)',
-        },
+        required: ['query'],
       },
-      required: ['query'],
     },
   },
   {
-    name: 'get_products_by_category',
-    description:
-      'Get products filtered by category slug. Use this when a customer asks about a specific knife type or category.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        categorySlug: {
-          type: 'string',
-          description: 'The category slug to filter by (e.g. "chef-knives", "bread-knives")',
+    type: 'function',
+    function: {
+      name: 'get_products_by_category',
+      description:
+        'Get products filtered by category slug. Use this when a customer asks about a specific knife type or category.',
+      parameters: {
+        type: 'object',
+        properties: {
+          categorySlug: {
+            type: 'string',
+            description: 'The category slug to filter by (e.g. "chef-knives", "bread-knives")',
+          },
+          limit: {
+            type: 'number',
+            description: 'Maximum number of products to return (default: 5, max: 10)',
+          },
         },
-        limit: {
-          type: 'number',
-          description: 'Maximum number of products to return (default: 5, max: 10)',
-        },
+        required: ['categorySlug'],
       },
-      required: ['categorySlug'],
     },
   },
   {
-    name: 'track_order',
-    description:
-      'Look up an order by order number and optional guest email to show the customer their order status.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        orderNumber: {
-          type: 'string',
-          description: 'The order number (e.g. SE-ABC123-XYZ789)',
+    type: 'function',
+    function: {
+      name: 'track_order',
+      description:
+        'Look up an order by order number and optional guest email to show the customer their order status.',
+      parameters: {
+        type: 'object',
+        properties: {
+          orderNumber: {
+            type: 'string',
+            description: 'The order number (e.g. SE-ABC123-XYZ789)',
+          },
+          email: {
+            type: 'string',
+            description: 'Guest email address used at checkout (required for guest orders)',
+          },
         },
-        email: {
-          type: 'string',
-          description: 'Guest email address used at checkout (required for guest orders)',
-        },
+        required: ['orderNumber'],
       },
-      required: ['orderNumber'],
     },
   },
 ];
@@ -96,11 +107,11 @@ export interface ChatbotReply {
 }
 
 export class ChatbotService {
-  private client: Anthropic;
+  private client: Groq;
 
   constructor(private prisma: PrismaClient) {
-    this.client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
+    this.client = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
     });
   }
 
@@ -226,22 +237,23 @@ export class ChatbotService {
   }
 
   /**
-   * Sends a user message to the Anthropic Claude chatbot and runs the tool-use
-   * agentic loop until a final text response is produced.
+   * Sends a user message to the Groq LLM and runs the tool-use agentic loop
+   * until a final text response is produced.
    * Returns the reply text and any products surfaced by product-search tools.
    *
    * @param input - Validated chatbot message input with history.
    */
   async chat(input: ChatbotMessageInput): Promise<ChatbotReply> {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      logger.warn('ANTHROPIC_API_KEY is not set — chatbot returning stub response');
+    if (!process.env.GROQ_API_KEY) {
+      logger.warn('GROQ_API_KEY is not set — chatbot returning stub response');
       return {
         reply: 'The chatbot is not configured yet. Please contact support.',
         products: [],
       };
     }
 
-    const messages: Anthropic.MessageParam[] = [
+    const messages: Groq.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
       ...input.history.map((h) => ({
         role: h.role as 'user' | 'assistant',
         content: h.content,
@@ -249,74 +261,76 @@ export class ChatbotService {
       { role: 'user', content: input.message },
     ];
 
-    let response = await this.client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+    let response = await this.client.chat.completions.create({
+      model: MODEL,
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
       tools: TOOLS,
+      tool_choice: 'auto',
       messages,
     });
 
-    logger.debug({ stopReason: response.stop_reason }, 'chatbot initial response');
+    logger.debug({ finishReason: response.choices[0]?.finish_reason }, 'chatbot initial response');
 
     const allProducts: ChatProduct[] = [];
 
     // Agentic tool-use loop
-    while (response.stop_reason === 'tool_use') {
-      const toolUseBlocks = response.content.filter(
-        (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
-      );
+    while (response.choices[0]?.finish_reason === 'tool_calls') {
+      const assistantMessage = response.choices[0].message;
+      const toolCalls = assistantMessage.tool_calls ?? [];
 
-      const toolResults: Anthropic.ToolResultBlockParam[] = [];
+      // Append assistant turn with tool_calls
+      messages.push(assistantMessage);
 
-      for (const toolUse of toolUseBlocks) {
-        logger.info({ tool: toolUse.name, input: toolUse.input }, 'chatbot executing tool');
+      for (const toolCall of toolCalls) {
+        const toolName = toolCall.function.name;
+        let toolInput: Record<string, unknown> = {};
 
         try {
-          const { result, products } = await this.executeTool(
-            toolUse.name,
-            toolUse.input as Record<string, unknown>,
-          );
+          toolInput = JSON.parse(toolCall.function.arguments) as Record<string, unknown>;
+        } catch {
+          logger.warn({ tool: toolName }, 'failed to parse tool arguments');
+        }
+
+        logger.info({ tool: toolName, input: toolInput }, 'chatbot executing tool');
+
+        try {
+          const { result, products } = await this.executeTool(toolName, toolInput);
 
           if (products) {
             allProducts.push(...products);
           }
 
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: toolUse.id,
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
             content: JSON.stringify(result),
           });
         } catch (err) {
-          logger.error({ tool: toolUse.name, err }, 'chatbot tool execution failed');
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: toolUse.id,
+          logger.error({ tool: toolName, err }, 'chatbot tool execution failed');
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
             content: JSON.stringify({ error: 'Tool execution failed. Please try again.' }),
-            is_error: true,
           });
         }
       }
 
-      messages.push({ role: 'assistant', content: response.content });
-      messages.push({ role: 'user', content: toolResults });
-
-      response = await this.client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
+      response = await this.client.chat.completions.create({
+        model: MODEL,
         max_tokens: 1024,
-        system: SYSTEM_PROMPT,
         tools: TOOLS,
+        tool_choice: 'auto',
         messages,
       });
 
-      logger.debug({ stopReason: response.stop_reason }, 'chatbot tool-use loop response');
+      logger.debug(
+        { finishReason: response.choices[0]?.finish_reason },
+        'chatbot tool-use loop response',
+      );
     }
 
-    const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text');
+    const reply = response.choices[0]?.message?.content ?? 'I could not generate a response. Please try again.';
 
-    return {
-      reply: textBlock?.text ?? 'I could not generate a response. Please try again.',
-      products: allProducts,
-    };
+    return { reply, products: allProducts };
   }
 }

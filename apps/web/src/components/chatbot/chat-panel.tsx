@@ -126,7 +126,7 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
         <Bot className="h-5 w-5 shrink-0 text-white" aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-white leading-tight">Slicing Edge Assistant</p>
-          <p className="text-xs text-white/70">Powered by Claude AI</p>
+          <p className="text-xs text-white/70">Powered by Groq AI</p>
         </div>
         <button
           type="button"

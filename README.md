@@ -16,7 +16,7 @@
 | Payments | Stripe Checkout Sessions + Webhooks + Stripe Tax |
 | Email | Resend + React Email |
 | Images | Cloudinary CDN + Next.js `<Image>` |
-| AI Chatbot | Anthropic Claude API — tool-use pattern (server-side only) |
+| AI Chatbot | Groq API — Llama 3.3 70B, tool-use pattern (server-side only) |
 | Rate Limiting | Upstash Redis + `@upstash/ratelimit` |
 | Testing | Vitest, React Testing Library, Playwright (E2E) |
 | Monorepo | Turborepo + npm workspaces |
@@ -55,7 +55,7 @@ slicing-edge/
 - **Reviews** — star rating + comment, per-product pagination, delete own review or admin delete
 - **Account** — profile page with saved address; order history feed
 - **Admin panel** — product CRUD (create/edit/deactivate) with Cloudinary image upload, order status management with email notification on ship, user role management, metrics dashboard (KPIs + 30-day orders chart + low-stock list)
-- **AI Chatbot** — floating widget (bottom-right) powered by Anthropic Claude; tools: search products, recommend by category, track order
+- **AI Chatbot** — floating widget (bottom-right) powered by Groq AI (Llama 3.3 70B); tools: search products, recommend by category, track order
 - **Transactional emails** — Welcome, Password Reset, Order Confirmation, Shipped Notification (Resend + React Email)
 - **SEO** — `sitemap.xml`, `robots.txt`, OG images, JSON-LD structured data on product pages
 - **Accessibility** — WCAG 2.1 AA: aria labels, focus rings, min 44×44px touch targets, color-contrast compliant palette
@@ -144,7 +144,7 @@ Railway (Fastify API) ──► Railway PostgreSQL
         ├──► Stripe (payments + webhooks)
         ├──► Resend (email)
         ├──► Upstash Redis (rate limiting)
-        └──► Anthropic Claude (AI chatbot)
+        └──► Groq AI (AI chatbot)
 ```
 
 ### Deployment platforms

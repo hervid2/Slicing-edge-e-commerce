@@ -94,10 +94,10 @@ All notable changes to Slicing Edge are documented here, organized by feature mi
 - Streaming response rendering
 
 **Day 13 — AI Chatbot backend**
-- `POST /api/chatbot` endpoint with Anthropic Claude integration
+- `POST /api/chatbot` endpoint with Groq AI integration (Llama 3.3 70B)
 - Tool-use pattern: `searchProducts`, `recommendByCategory`, `trackOrder`
 - Chatbot-specific rate limiting (stricter than general API)
-- Server-side only — `ANTHROPIC_API_KEY` never exposed to client
+- Server-side only — `GROQ_API_KEY` never exposed to client
 
 **Day 12 — Admin user management**
 - `GET /api/admin/users` paginated endpoint
