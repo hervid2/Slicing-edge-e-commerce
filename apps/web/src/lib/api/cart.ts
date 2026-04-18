@@ -53,7 +53,11 @@ function getErrorMessage(data: unknown, fallback: string) {
 async function request<T>(path: string, init: RequestInit, sessionId: string) {
   const authHeader = await getAuthHeader();
   const headers = new Headers(init.headers);
-  headers.set('Content-Type', 'application/json');
+  // Only set Content-Type for requests that carry a body (POST, PUT, PATCH).
+  // DELETE and GET have no body; Fastify rejects them if the header is present.
+  if (init.body !== undefined) {
+    headers.set('Content-Type', 'application/json');
+  }
   headers.set('x-session-id', sessionId);
 
   if (authHeader.Authorization) {
