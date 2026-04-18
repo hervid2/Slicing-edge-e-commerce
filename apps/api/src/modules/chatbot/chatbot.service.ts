@@ -107,12 +107,12 @@ export interface ChatbotReply {
 }
 
 export class ChatbotService {
-  private client: Groq;
+  private client: Groq | null = null;
 
   constructor(private prisma: PrismaClient) {
-    this.client = new Groq({
-      apiKey: process.env.GROQ_API_KEY,
-    });
+    if (process.env.GROQ_API_KEY) {
+      this.client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    }
   }
 
   /**
@@ -244,13 +244,15 @@ export class ChatbotService {
    * @param input - Validated chatbot message input with history.
    */
   async chat(input: ChatbotMessageInput): Promise<ChatbotReply> {
-    if (!process.env.GROQ_API_KEY) {
+    if (!this.client) {
       logger.warn('GROQ_API_KEY is not set — chatbot returning stub response');
       return {
         reply: 'The chatbot is not configured yet. Please contact support.',
         products: [],
       };
     }
+
+    const client = this.client;
 
     const messages: Groq.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: SYSTEM_PROMPT },
@@ -261,7 +263,7 @@ export class ChatbotService {
       { role: 'user', content: input.message },
     ];
 
-    let response = await this.client.chat.completions.create({
+    let response = await client.chat.completions.create({
       model: MODEL,
       max_tokens: 1024,
       tools: TOOLS,
@@ -315,7 +317,7 @@ export class ChatbotService {
         }
       }
 
-      response = await this.client.chat.completions.create({
+      response = await client.chat.completions.create({
         model: MODEL,
         max_tokens: 1024,
         tools: TOOLS,
