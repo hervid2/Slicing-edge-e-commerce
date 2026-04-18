@@ -92,9 +92,6 @@ export default withSentryConfig(nextConfig, {
   // Suppress the Sentry CLI output during builds (keeps CI logs clean).
   silent: !process.env.CI,
 
-  // Automatically tree-shake Sentry logger statements in production.
-  disableLogger: true,
-
   // Upload source maps only when SENTRY_AUTH_TOKEN is present (CI / Vercel).
   // Local dev builds skip the upload step silently.
   authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -104,6 +101,8 @@ export default withSentryConfig(nextConfig, {
   // Tunnel Sentry requests through Next.js to avoid ad-blockers.
   tunnelRoute: "/monitoring",
 
-  // Hide source map files from the browser (uploaded to Sentry, not served).
-  hideSourceMaps: true,
+  // Delete source maps after uploading so they are never served to the browser.
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
 });
