@@ -14,7 +14,7 @@ You help customers:
 Be concise, friendly, and product-focused. When recommending products, use the available tools to fetch real catalog data.
 If a customer asks to track an order, ask for their order number (format: SE-XXXXX-XXXXXX) and email if needed.`;
 
-const MODEL = 'llama-3.3-70b-versatile';
+const MODEL = 'llama3-groq-70b-8192-tool-use-preview';
 
 /** Groq tool definitions (OpenAI function-calling format). */
 const TOOLS: Groq.Chat.ChatCompletionTool[] = [
