@@ -254,70 +254,17 @@ export class ChatbotService {
 
     const client = this.client;
 
-    const messages: Groq.Chat.ChatCompletionMessageParam[] = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...input.history.map((h) => ({
-        role: h.role as 'user' | 'assistant',
-        content: h.content,
-      })),
-      { role: 'user', content: input.message },
-    ];
+    try {
+      const messages: Groq.Chat.ChatCompletionMessageParam[] = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...input.history.map((h) => ({
+          role: h.role as 'user' | 'assistant',
+          content: h.content,
+        })),
+        { role: 'user', content: input.message },
+      ];
 
-    let response = await client.chat.completions.create({
-      model: MODEL,
-      max_tokens: 1024,
-      tools: TOOLS,
-      tool_choice: 'auto',
-      messages,
-    });
-
-    logger.debug({ finishReason: response.choices[0]?.finish_reason }, 'chatbot initial response');
-
-    const allProducts: ChatProduct[] = [];
-
-    // Agentic tool-use loop
-    while (response.choices[0]?.finish_reason === 'tool_calls') {
-      const assistantMessage = response.choices[0].message;
-      const toolCalls = assistantMessage.tool_calls ?? [];
-
-      // Append assistant turn with tool_calls
-      messages.push(assistantMessage);
-
-      for (const toolCall of toolCalls) {
-        const toolName = toolCall.function.name;
-        let toolInput: Record<string, unknown> = {};
-
-        try {
-          toolInput = JSON.parse(toolCall.function.arguments) as Record<string, unknown>;
-        } catch {
-          logger.warn({ tool: toolName }, 'failed to parse tool arguments');
-        }
-
-        logger.info({ tool: toolName, input: toolInput }, 'chatbot executing tool');
-
-        try {
-          const { result, products } = await this.executeTool(toolName, toolInput);
-
-          if (products) {
-            allProducts.push(...products);
-          }
-
-          messages.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: JSON.stringify(result),
-          });
-        } catch (err) {
-          logger.error({ tool: toolName, err }, 'chatbot tool execution failed');
-          messages.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: JSON.stringify({ error: 'Tool execution failed. Please try again.' }),
-          });
-        }
-      }
-
-      response = await client.chat.completions.create({
+      let response = await client.chat.completions.create({
         model: MODEL,
         max_tokens: 1024,
         tools: TOOLS,
@@ -325,14 +272,72 @@ export class ChatbotService {
         messages,
       });
 
-      logger.debug(
-        { finishReason: response.choices[0]?.finish_reason },
-        'chatbot tool-use loop response',
-      );
+      logger.debug({ finishReason: response.choices[0]?.finish_reason }, 'chatbot initial response');
+
+      const allProducts: ChatProduct[] = [];
+
+      // Agentic tool-use loop
+      while (response.choices[0]?.finish_reason === 'tool_calls') {
+        const assistantMessage = response.choices[0].message;
+        const toolCalls = assistantMessage.tool_calls ?? [];
+
+        messages.push(assistantMessage);
+
+        for (const toolCall of toolCalls) {
+          const toolName = toolCall.function.name;
+          let toolInput: Record<string, unknown> = {};
+
+          try {
+            toolInput = JSON.parse(toolCall.function.arguments) as Record<string, unknown>;
+          } catch {
+            logger.warn({ tool: toolName }, 'failed to parse tool arguments');
+          }
+
+          logger.info({ tool: toolName, input: toolInput }, 'chatbot executing tool');
+
+          try {
+            const { result, products } = await this.executeTool(toolName, toolInput);
+            if (products) allProducts.push(...products);
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(result),
+            });
+          } catch (err) {
+            logger.error({ tool: toolName, err }, 'chatbot tool execution failed');
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ error: 'Tool execution failed. Please try again.' }),
+            });
+          }
+        }
+
+        response = await client.chat.completions.create({
+          model: MODEL,
+          max_tokens: 1024,
+          tools: TOOLS,
+          tool_choice: 'auto',
+          messages,
+        });
+
+        logger.debug(
+          { finishReason: response.choices[0]?.finish_reason },
+          'chatbot tool-use loop response',
+        );
+      }
+
+      const reply =
+        response.choices[0]?.message?.content ??
+        'I could not generate a response. Please try again.';
+
+      return { reply, products: allProducts };
+    } catch (err) {
+      logger.error({ err }, 'chatbot Groq API call failed');
+      return {
+        reply: 'Sorry, the assistant is temporarily unavailable. Please try again later.',
+        products: [],
+      };
     }
-
-    const reply = response.choices[0]?.message?.content ?? 'I could not generate a response. Please try again.';
-
-    return { reply, products: allProducts };
   }
 }
