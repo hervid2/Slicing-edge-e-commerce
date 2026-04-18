@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Search, Package, Calendar, Truck, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +23,7 @@ interface TrackedOrder {
   total: string;
   currency: string;
   createdAt: string;
-  items: Array<{ id: string; productName: string; quantity: number; productPrice: string }>;
+  items: Array<{ id: string; productName: string; quantity: number; productPrice: string; productImage: string | null }>;
   statusHistory: Array<{ id: string; status: OrderStatus; note: string | null; createdAt: string }>;
 }
 
@@ -35,6 +37,7 @@ function statusIcon(status: OrderStatus) {
 }
 
 export default function OrdersPage() {
+  const { status: sessionStatus } = useSession();
   const searchParams = useSearchParams();
   const initialOrderNumber = searchParams.get('order') ?? '';
   const initialEmail = searchParams.get('email') ?? '';
@@ -158,11 +161,28 @@ export default function OrdersPage() {
 
           <div className="mt-6">
             <h2 className="font-semibold text-[var(--color-primary)]">Items</h2>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="mt-3 space-y-3 text-sm">
               {(order.items ?? []).map((item) => (
-                <li key={item.id} className="flex justify-between border-b border-[var(--color-border)] pb-2">
-                  <span>{item.productName} x{item.quantity}</span>
-                  <span>${Number(item.productPrice).toFixed(2)}</span>
+                <li key={item.id} className="flex items-center gap-3 border-b border-[var(--color-border)] pb-3">
+                  {item.productImage ? (
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-[var(--color-border)]">
+                      <Image
+                        src={item.productImage}
+                        alt={item.productName}
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border border-[var(--color-border)] bg-[var(--color-background)]">
+                      <Package className="h-6 w-6 text-[var(--color-muted)]" />
+                    </div>
+                  )}
+                  <div className="flex flex-1 items-center justify-between gap-2">
+                    <span className="font-medium text-[var(--color-foreground)]">{item.productName} <span className="text-[var(--color-muted)]">×{item.quantity}</span></span>
+                    <span className="shrink-0 font-medium">${Number(item.productPrice).toFixed(2)}</span>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -193,9 +213,11 @@ export default function OrdersPage() {
         </section>
       )}
 
-      <p className="mt-8 text-sm text-[var(--color-muted)]">
-        Have an account? <Link href="/auth/login" className="text-[var(--color-accent)] hover:underline">Sign in</Link> to view full order history.
-      </p>
+      {sessionStatus !== 'authenticated' && (
+        <p className="mt-8 text-sm text-[var(--color-muted)]">
+          Have an account? <Link href="/auth/login" className="text-[var(--color-accent)] hover:underline">Sign in</Link> to view full order history.
+        </p>
+      )}
     </div>
   );
 }
