@@ -221,12 +221,12 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Smoke test end-to-end en staging
 
 ### Día 22: QA final
-- [ ] Flujo completo guest: browse → cart → checkout → payment → tracking
-- [ ] Flujo completo authenticated: register → login → cart → checkout → orders
-- [ ] Admin: login → products CRUD → orders management
-- [ ] Chatbot: consulta de producto, rastreo de orden
-- [ ] Emails: verificar recepción de todos los templates
-- [ ] Mobile QA en dispositivos reales
+- [x] Flujo completo guest: browse → cart → checkout → payment → tracking
+- [x] Flujo completo authenticated: register → login → cart → checkout → orders
+- [x] Admin: login → products CRUD → orders management
+- [x] Chatbot: consulta de producto, rastreo de orden
+- [x] Emails: verificar recepción de todos los templates
+- [x] Mobile QA en dispositivos reales
 
 ### Día 23: Fixes y deploy a producción
 - [ ] Corregir bugs encontrados en QA
