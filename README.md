@@ -1,149 +1,246 @@
-# Slicing Edge — Premium Kitchen Knives E-Commerce
+# Slicing Edge
 
-Portfolio-grade, full-stack e-commerce platform focused on premium kitchen knives.
-The project demonstrates production-minded architecture in a Turborepo monorepo,
-including checkout/webhooks, auth, transactional emails, admin workflows, and
-shared validation contracts.
+> Premium kitchen knife e-commerce platform — portfolio-grade, full-stack monorepo.
 
-## Live Demo
+**Live demo:** `https://slicing-edge.vercel.app` &nbsp;|&nbsp; **API docs (Swagger):** `https://<railway-api-url>/docs`
 
-- **Web App:** `TBD (add deployed Vercel URL)`
-- **API Docs (Swagger):** `TBD (add deployed Railway URL)/docs`
-
-> For local API docs, run the project and open: `http://localhost:3001/docs`
-
-## Project Overview
-
-Slicing Edge solves the end-to-end flow for a modern niche storefront:
-
-- discover products via category/search
-- cart + checkout for guest and authenticated users
-- Stripe payment lifecycle with webhook reconciliation
-- guest order tracking and authenticated order history
-- admin management for products and orders
-
-If you maintain a portfolio site, add a screenshot/GIF under `docs/assets/` and link it here.
+---
 
 ## Tech Stack
 
 | Layer | Technology |
-|---|---|
-| Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 |
-| Backend | Fastify 5, TypeScript |
-| Database | PostgreSQL + Prisma ORM |
-| Auth | Auth.js v5 (Credentials + Google OAuth) |
-| Payments | Stripe Checkout + Webhooks |
+|-------|-----------|
+| Frontend | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4 |
+| Backend | Fastify 5, TypeScript, Prisma ORM, PostgreSQL |
+| Auth | Auth.js v5 — email/password + Google OAuth, JWT strategy |
+| Payments | Stripe Checkout Sessions + Webhooks + Stripe Tax |
 | Email | Resend + React Email |
-| Shared Contracts | Zod schemas in `packages/shared` |
+| Images | Cloudinary CDN + Next.js `<Image>` |
+| AI Chatbot | Anthropic Claude API — tool-use pattern (server-side only) |
+| Rate Limiting | Upstash Redis + `@upstash/ratelimit` |
+| Testing | Vitest, React Testing Library, Playwright (E2E) |
 | Monorepo | Turborepo + npm workspaces |
+| CI/CD | GitHub Actions → Railway (API) + Vercel (Web) |
 
-## Architecture Overview
+---
 
-```text
-[Next.js Web (apps/web)]
-        |
-        | HTTP (REST)
-        v
-[Fastify API (apps/api)] ----> [Stripe API]
-        |                         |
-        | Prisma                  | Webhooks
-        v                         v
- [PostgreSQL DB] <----------- /api/checkout/webhook
-        ^
-        |
-[packages/db, packages/shared, packages/email]
+## Monorepo Structure
+
 ```
-
-## Folder Structure (Monorepo)
-
-```text
 slicing-edge/
-├─ apps/
-│  ├─ web/                 # Next.js storefront + admin UI
-│  └─ api/                 # Fastify REST API + Swagger
-├─ packages/
-│  ├─ db/                  # Prisma schema/client/seed
-│  ├─ shared/              # Zod schemas, constants, shared types
-│  ├─ email/               # React Email templates + sendEmail helper
-│  └─ config/              # Shared TypeScript config presets
-├─ docs/engineering/       # Roadmap + engineering notes
-├─ agent.md                # Project architecture and coding conventions
-└─ .env.example            # Root environment template
+├── apps/
+│   ├── web/          # Next.js 15 frontend  → Vercel
+│   └── api/          # Fastify 5 REST API   → Railway
+├── packages/
+│   ├── db/           # Prisma schema, client, migrations, seed
+│   ├── shared/       # Zod schemas, constants, shared types
+│   ├── email/        # React Email templates + Resend helper
+│   └── config/       # Shared TypeScript configs
+├── docs/
+│   └── engineering/  # ROADMAP, DEPLOY guide, ENV reference, notes
+└── .github/
+    └── workflows/    # CI/CD pipeline (deploy.yml)
 ```
 
-## Getting Started (Local, 5 commands)
+---
+
+## Features
+
+- **Storefront** — product listing with filters, full-text search, product detail pages, category browsing
+- **Cart** — guest cart (sessionId) + authenticated cart, Zustand store with localStorage persistence
+- **Checkout** — guest + authenticated flows, Stripe Checkout redirect, webhook-confirmed order creation, order confirmation email
+- **Order tracking** — guest tracking by order number + email; authenticated order history under `/account/orders`
+- **Auth** — register with email verification, login, Google OAuth, forgot/reset password
+- **Wishlist** — toggle add/remove per product, persistent per authenticated user
+- **Reviews** — star rating + comment, per-product pagination, delete own review or admin delete
+- **Account** — profile page with saved address; order history feed
+- **Admin panel** — product CRUD (create/edit/deactivate) with Cloudinary image upload, order status management with email notification on ship, user role management, metrics dashboard (KPIs + 30-day orders chart + low-stock list)
+- **AI Chatbot** — floating widget (bottom-right) powered by Anthropic Claude; tools: search products, recommend by category, track order
+- **Transactional emails** — Welcome, Password Reset, Order Confirmation, Shipped Notification (Resend + React Email)
+- **SEO** — `sitemap.xml`, `robots.txt`, OG images, JSON-LD structured data on product pages
+- **Accessibility** — WCAG 2.1 AA: aria labels, focus rings, min 44×44px touch targets, color-contrast compliant palette
+- **Security** — CSP headers, Helmet, Upstash rate limiting, XSS-safe input handling, no client-side secrets
+- **Testing** — Vitest unit + integration (backend), React Testing Library + Vitest (frontend), Playwright E2E suite
+
+---
+
+## Local Development
 
 ### Prerequisites
 
-- Node.js >= 20
-- npm >= 10
-- PostgreSQL running locally or remotely
+- Node.js ≥ 20
+- npm ≥ 10
+- PostgreSQL (local instance or remote URL)
 
-### Quick Start
+### 1. Clone and install
 
 ```bash
+git clone https://github.com/hervid2/slicing_edge.git
+cd slicing_edge
 npm install
-cp .env.example .env
-npm run db:push
-npm run db:seed
-npm run dev
 ```
 
-After startup:
+### 2. Configure environment variables
 
-- Web: `http://localhost:3000`
-- API: `http://localhost:3001`
-- Swagger: `http://localhost:3001/docs`
+```bash
+cp .env.example .env
+cp apps/api/.env.example apps/api/.env
+cp apps/web/env.local.example apps/web/.env.local
+```
 
-## Environment Variables
+Fill in each file with your keys. See [Environment Variables reference](docs/engineering/ENV.md).
 
-Use these templates as reference:
+### 3. Set up the database
 
-- Root shared template: `./.env.example`
-- API-focused template: `./apps/api/.env.example`
-- Web-focused template: `./apps/web/env.local.example`
-- Prisma package template: `./packages/db/.env.example`
-- Email package template: `./packages/email/.env.example`
+```bash
+npm run db:generate      # generate Prisma client
+npm run db:push          # push schema (dev — no migration files)
+npm run db:seed          # seed with sample products and admin user
+```
 
-Critical variables to set first:
+### 4. Start dev servers
 
-- `DATABASE_URL`
-- `AUTH_SECRET`
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `NEXT_PUBLIC_API_URL`
-- `FRONTEND_URL`
+```bash
+npm run dev              # starts API on :3001 and Web on :3000 concurrently
+```
 
-## API Documentation
+| Service | URL |
+|---------|-----|
+| Web storefront | http://localhost:3000 |
+| API | http://localhost:3001 |
+| Swagger UI | http://localhost:3001/docs |
 
-- Swagger UI (local): `http://localhost:3001/docs`
-- OpenAPI metadata configured in: `apps/api/src/server.ts`
+### Test accounts (after seed)
 
-## Stripe Local Webhook Testing
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@slicing-edge.com | admin123456 |
+| Customer | customer@example.com | customer123456 |
+
+### Stripe local webhook
 
 ```bash
 stripe listen --forward-to http://localhost:3001/api/checkout/webhook
 ```
 
-Test cards:
+Test cards: `4242 4242 4242 4242` (success) · `4000 0000 0000 0002` (declined)
 
-- Success: `4242 4242 4242 4242`
-- Declined: `4000 0000 0000 0002`
-- 3DS: `4000 0025 0000 3155`
+---
 
-## Test Accounts (after seed)
+## Deploy to Production
 
-| Role | Email | Password |
-|---|---|---|
-| Admin | admin@slicing-edge.com | admin123456 |
-| Customer | customer@example.com | customer123456 |
+Full step-by-step guide: [docs/engineering/DEPLOY.md](docs/engineering/DEPLOY.md)
 
-## Engineering Guidelines (Portfolio)
+### Infrastructure at a glance
 
-- `agent.md` — project architecture and coding conventions.
-- `.windsurf/skills/*.md` — focused implementation rules.
-- `docs/engineering/README.md` — rationale/index for engineering docs.
+```
+Vercel (Next.js web)
+        │
+        │ HTTPS/REST
+        ▼
+Railway (Fastify API) ──► Railway PostgreSQL
+        │
+        ├──► Cloudinary (images)
+        ├──► Stripe (payments + webhooks)
+        ├──► Resend (email)
+        ├──► Upstash Redis (rate limiting)
+        └──► Anthropic Claude (AI chatbot)
+```
+
+### Deployment platforms
+
+| Service | Platform | Auto-deploy trigger |
+|---------|----------|-------------------|
+| `apps/web` | Vercel | Push to `main` (GitHub integration) |
+| `apps/api` | Railway | Push to `main` (`railway.toml` + Dockerfile) |
+| Database | Railway PostgreSQL or Neon | Manual provision |
+
+### Quick deploy checklist
+
+1. **Database** — provision PostgreSQL on Railway, copy `DATABASE_URL`
+2. **API** — create Railway service, set all env vars (see [ENV.md](docs/engineering/ENV.md))
+3. **Web** — import repo to Vercel, set all env vars
+4. **Migrate + seed** — `npm run db:migrate:deploy && npm run db:seed:prod`
+5. **Stripe webhook** — register `https://<api-url>/api/checkout/webhook` in Stripe Dashboard
+6. **Push to `main`** — CI pipeline runs: test → build → deploy API → deploy Web → smoke test
+
+---
+
+## CI/CD Pipeline
+
+Defined in [.github/workflows/deploy.yml](.github/workflows/deploy.yml):
+
+```
+push to main
+  ├── test      (Vitest — unit + integration)
+  ├── build     (turbo build)
+  ├── deploy-api   (Railway CLI)
+  ├── deploy-web   (Vercel CLI)
+  └── smoke-test   (scripts/smoke-test.sh)
+```
+
+Required GitHub Actions secrets: `RAILWAY_TOKEN`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `DATABASE_URL`.
+
+---
+
+## Scripts Reference
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start all apps in development mode |
+| `npm run build` | Build all packages and apps |
+| `npm run lint` | ESLint across monorepo |
+| `npm run type-check` | TypeScript check across monorepo |
+| `npm run format` | Prettier format all `.ts/.tsx/.md/.json` |
+| `npm run db:generate` | Generate Prisma client from schema |
+| `npm run db:push` | Push schema to DB without migration files (dev) |
+| `npm run db:migrate:deploy` | Apply pending migrations (production) |
+| `npm run db:seed` | Seed development data |
+| `npm run db:seed:prod` | Seed production data (real images) |
+
+---
+
+## Design System
+
+| Token | Value |
+|-------|-------|
+| Primary | `#1A3A2A` — deep forest green |
+| Primary Light | `#2D5A3F` |
+| Accent / CTA | `#3D8B4F` — vibrant green |
+| Background | `#C5CFC6` — sage green |
+| Heading font | Playfair Display (serif) |
+| Body font | Inter (sans-serif) |
+
+---
+
+## Screenshots
+
+### Home
+![Home](docs/screenshots/home.png)
+
+### Product Detail
+![Product Detail](docs/screenshots/product-detail.png)
+
+### Cart
+![Cart](docs/screenshots/cart.png)
+
+### Checkout
+![Checkout](docs/screenshots/checkout.png)
+
+---
+
+## Engineering Docs
+
+| Document | Description |
+|----------|-------------|
+| [agent.md](agent.md) | Stack, architecture, code conventions |
+| [docs/engineering/ROADMAP.md](docs/engineering/ROADMAP.md) | 25-day implementation roadmap |
+| [docs/engineering/DEPLOY.md](docs/engineering/DEPLOY.md) | Full production deploy guide |
+| [docs/engineering/ENV.md](docs/engineering/ENV.md) | Environment variables reference |
+| [docs/engineering/README.md](docs/engineering/README.md) | Engineering guidelines index |
+
+---
 
 ## License
 
-MIT
+MIT — built for portfolio purposes. Not affiliated with any real brand.

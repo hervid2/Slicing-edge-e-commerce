@@ -236,11 +236,11 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 - [x] Stripe: activar modo live (si aplica) o mantener test mode
 
 ### Día 24: Documentación final
-- [ ] Actualizar `README.md` con instrucciones de deploy
-- [ ] Documentar variables de entorno de producción
-- [ ] Actualizar `apps/web/README.md` con features implementados
-- [ ] Crear `CHANGELOG.md` con historial de features
-- [ ] Screenshots/GIFs del proyecto para portfolio
+- [x] Actualizar `README.md` con instrucciones de deploy
+- [x] Documentar variables de entorno de producción
+- [x] Actualizar `apps/web/README.md` con features implementados
+- [x] Crear `CHANGELOG.md` con historial de features
+- [x] Screenshots/GIFs del proyecto para portfolio
 
 ### Día 25 (buffer): Refinamiento
 - [ ] Performance: analizar Core Web Vitals y optimizar
