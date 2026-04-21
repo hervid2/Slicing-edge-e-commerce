@@ -7,12 +7,20 @@ import { getSession, signOut } from 'next-auth/react';
 import { MobileNav } from './mobile-nav';
 import { CartButton } from './cart-button';
 import { SearchModal } from '@/components/search/search-modal';
+import { AdminSearchModal } from '@/components/admin/admin-search-modal';
 import { Logo } from '@/components/ui/logo';
 
-const navLinks = [
+const userNavLinks = [
   { href: '/products', label: 'Shop' },
   { href: '/categories', label: 'Collections' },
   { href: '/about', label: 'About' },
+];
+
+const adminNavLinks = [
+  { href: '/admin', label: 'Dashboard' },
+  { href: '/admin/products', label: 'Products' },
+  { href: '/admin/orders', label: 'Orders' },
+  { href: '/admin/users', label: 'Users' },
 ];
 
 export function Header() {
@@ -45,8 +53,9 @@ export function Header() {
   }, []);
 
   const isAdmin = sessionUser?.role === 'ADMIN';
-
+  const navLinks = isAdmin ? adminNavLinks : userNavLinks;
   const accountLabel = sessionUser?.name || sessionUser?.email || '';
+  const logoHref = isAdmin ? '/admin' : '/';
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -62,7 +71,7 @@ export function Header() {
         </button>
 
         {/* Logo */}
-        <Link href="/" aria-label="Slicing Edge — Home">
+        <Link href={logoHref} aria-label="Slicing Edge — Home">
           <Logo theme="dark" className="h-9 w-auto" />
         </Link>
 
@@ -86,14 +95,18 @@ export function Header() {
               {accountLabel}
             </span>
           )}
+
+          {/* Search — admin: quicknav; user: product search */}
           <button
             type="button"
             className="inline-flex h-11 w-11 items-center justify-center rounded-md text-[var(--color-foreground)] transition-colors hover:text-[var(--color-accent)]"
-            aria-label="Search"
+            aria-label={isAdmin ? 'Admin quick search' : 'Search'}
             onClick={() => setIsSearchOpen(true)}
           >
             <Search className="h-5 w-5" />
           </button>
+
+          {/* Wishlist — user only */}
           {!isAdmin && (
             <Link
               href="/wishlist"
@@ -103,11 +116,15 @@ export function Header() {
               <Heart className="h-5 w-5" />
             </Link>
           )}
-          <CartButton />
+
+          {/* Cart — user only */}
+          {!isAdmin && <CartButton />}
+
+          {/* Account / Sign in / Sign out */}
           {sessionUser ? (
             <>
               <Link
-                href="/account"
+                href={isAdmin ? '/account' : '/account'}
                 className="hidden h-11 w-11 items-center justify-center rounded-md text-[var(--color-foreground)] transition-colors hover:text-[var(--color-accent)] sm:inline-flex"
                 aria-label="My account"
                 title="My account"
@@ -144,8 +161,9 @@ export function Header() {
         isAdmin={isAdmin}
       />
 
-      {/* Search modal */}
-      {isSearchOpen && <SearchModal onClose={() => setIsSearchOpen(false)} />}
+      {/* Search / Admin quicknav modal */}
+      {isSearchOpen && isAdmin && <AdminSearchModal onClose={() => setIsSearchOpen(false)} />}
+      {isSearchOpen && !isAdmin && <SearchModal onClose={() => setIsSearchOpen(false)} />}
     </header>
   );
 }

@@ -1,16 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageCircle, X } from 'lucide-react';
+import { getSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { ChatPanel } from './chat-panel';
 
 /**
  * Floating chat widget fixed at the bottom-right corner.
- * Renders a FAB to open/close the chat panel.
+ * Hidden for admin sessions — the chatbot is a customer-facing feature.
  */
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void getSession().then((session) => {
+      if (!active) return;
+      setIsAdmin((session?.user as { role?: string })?.role === 'ADMIN');
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // While loading session, render nothing to avoid flash
+  if (isAdmin === null || isAdmin) return null;
 
   return (
     <>
