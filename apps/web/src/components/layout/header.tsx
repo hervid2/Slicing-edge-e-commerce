@@ -18,9 +18,11 @@ const navLinks = [
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(
-    null,
-  );
+  const [sessionUser, setSessionUser] = useState<{
+    name?: string | null;
+    email?: string | null;
+    role?: string;
+  } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -28,7 +30,11 @@ export function Header() {
     const loadSession = async () => {
       const session = await getSession();
       if (!active) return;
-      setSessionUser(session?.user ?? null);
+      setSessionUser(
+        session?.user
+          ? { ...session.user, role: (session.user as { role?: string }).role }
+          : null,
+      );
     };
 
     void loadSession();
@@ -37,6 +43,8 @@ export function Header() {
       active = false;
     };
   }, []);
+
+  const isAdmin = sessionUser?.role === 'ADMIN';
 
   const accountLabel = sessionUser?.name || sessionUser?.email || '';
 
@@ -86,13 +94,15 @@ export function Header() {
           >
             <Search className="h-5 w-5" />
           </button>
-          <Link
-            href="/wishlist"
-            className="hidden h-11 w-11 items-center justify-center rounded-md text-[var(--color-foreground)] transition-colors hover:text-[var(--color-accent)] sm:inline-flex"
-            aria-label="Wishlist"
-          >
-            <Heart className="h-5 w-5" />
-          </Link>
+          {!isAdmin && (
+            <Link
+              href="/wishlist"
+              className="hidden h-11 w-11 items-center justify-center rounded-md text-[var(--color-foreground)] transition-colors hover:text-[var(--color-accent)] sm:inline-flex"
+              aria-label="Wishlist"
+            >
+              <Heart className="h-5 w-5" />
+            </Link>
+          )}
           <CartButton />
           {sessionUser ? (
             <>
@@ -131,6 +141,7 @@ export function Header() {
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         isLoggedIn={!!sessionUser}
+        isAdmin={isAdmin}
       />
 
       {/* Search modal */}

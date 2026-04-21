@@ -29,20 +29,24 @@ export default async function AccountPage() {
     month: 'long',
   });
 
-  const quickLinks = [
-    {
-      href: '/account/orders',
-      icon: ShoppingBag,
-      label: 'My Orders',
-      description: 'View your order history and track shipments.',
-    },
-    {
-      href: '/wishlist',
-      icon: Heart,
-      label: 'Wishlist',
-      description: 'Your saved products.',
-    },
-  ];
+  const isAdmin = user.role === 'ADMIN';
+
+  const quickLinks = isAdmin
+    ? []
+    : [
+        {
+          href: '/account/orders',
+          icon: ShoppingBag,
+          label: 'My Orders',
+          description: 'View your order history and track shipments.',
+        },
+        {
+          href: '/wishlist',
+          icon: Heart,
+          label: 'Wishlist',
+          description: 'Your saved products.',
+        },
+      ];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -99,27 +103,29 @@ export default async function AccountPage() {
         </div>
       </div>
 
-      {/* Quick links */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {quickLinks.map(({ href, icon: Icon, label, description }) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex items-start gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-shadow hover:shadow-md"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-background)]">
-              <Icon className="h-5 w-5 text-[var(--color-accent)]" />
-            </div>
-            <div>
-              <p className="font-semibold text-[var(--color-foreground)]">{label}</p>
-              <p className="mt-0.5 text-sm text-[var(--color-muted)]">{description}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
+      {/* Quick links — only for regular users */}
+      {quickLinks.length > 0 && (
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {quickLinks.map(({ href, icon: Icon, label, description }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-start gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-shadow hover:shadow-md"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-background)]">
+                <Icon className="h-5 w-5 text-[var(--color-accent)]" />
+              </div>
+              <div>
+                <p className="font-semibold text-[var(--color-foreground)]">{label}</p>
+                <p className="mt-0.5 text-sm text-[var(--color-muted)]">{description}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
 
-      {user.role === 'ADMIN' && (
-        <div className="mt-4">
+      {isAdmin && (
+        <div className="mt-6">
           <Link
             href="/admin"
             className="flex items-start gap-4 rounded-xl border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 p-5 transition-shadow hover:shadow-md"
