@@ -46,13 +46,15 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
 }
 
 /**
- * Fetches paginated users for the admin users table.
+ * Fetches paginated users for the admin users table. Supports optional search.
  */
-export async function listAdminUsers(page = 1, limit = 20) {
+export async function listAdminUsers(page = 1, limit = 20, search?: string) {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (search) params.set('search', search);
   return request<{
     users: AdminUser[];
     pagination: { page: number; limit: number; total: number; totalPages: number };
-  }>(`/api/admin/users?page=${page}&limit=${limit}`, { method: 'GET' });
+  }>(`/api/admin/users?${params.toString()}`, { method: 'GET' });
 }
 
 /**
@@ -63,4 +65,21 @@ export async function updateUserRole(userId: string, role: UserRole) {
     `/api/admin/users/${userId}/role`,
     { method: 'PATCH', body: JSON.stringify({ role }) },
   );
+}
+
+/**
+ * Permanently deletes a user account.
+ */
+export async function deleteAdminUser(userId: string) {
+  return request<{ deleted: boolean }>(`/api/admin/users/${userId}`, { method: 'DELETE' });
+}
+
+/**
+ * Creates a new admin account and sends an activation email to the provided address.
+ */
+export async function inviteAdminUser(email: string) {
+  return request<{ invited: boolean; email: string }>('/api/admin/users/invite', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
 }

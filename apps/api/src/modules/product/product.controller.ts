@@ -1,7 +1,12 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
 import { productQuerySchema, createProductSchema, updateProductSchema } from '@slicing-edge/shared';
 import { ProductService } from './product.service';
 import { authenticate, requireAdmin } from '../../middleware/auth';
+
+const adminProductQuerySchema = productQuerySchema.extend({
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
 
 /**
  * Registers product catalog and product management routes.
@@ -187,7 +192,7 @@ export async function productRoutes(app: FastifyInstance) {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const query = productQuerySchema.parse(request.query);
+      const query = adminProductQuerySchema.parse(request.query);
       const result = await productService.listAdmin(query);
       return reply.send(result);
     },

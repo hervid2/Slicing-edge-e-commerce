@@ -36,3 +36,4 @@ export { WelcomeEmail } from './templates/welcome';
 export { OrderConfirmationEmail } from './templates/order-confirmation';
 export { OrderShippedEmail } from './templates/order-shipped';
 export { PasswordResetEmail } from './templates/password-reset';
+export { AdminInviteEmail } from './templates/admin-invite';

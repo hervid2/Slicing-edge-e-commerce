@@ -40,10 +40,26 @@ export interface DashboardMetrics {
   lowStockProducts: LowStockProduct[];
 }
 
+interface SessionLike {
+  apiAccessToken?: string;
+}
+
+async function getAccessToken() {
+  const { getSession } = await import('next-auth/react');
+  const session = (await getSession()) as SessionLike | null;
+  return session?.apiAccessToken;
+}
+
 /**
- * Fetches admin dashboard metrics. Must be called server-side with a valid admin token.
+ * Fetches admin dashboard metrics. Can be called client-side; token resolved via getSession().
  */
-export async function getAdminMetrics(token: string): Promise<DashboardMetrics> {
+export async function getAdminMetrics(): Promise<DashboardMetrics> {
+  const token = await getAccessToken();
+
+  if (!token) {
+    throw new Error('Unauthorized. Please sign in again.');
+  }
+
   const res = await fetch(`${API_URL}/api/admin/metrics`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
