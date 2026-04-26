@@ -111,7 +111,7 @@ export function ProductForm({ mode, categories, initialProduct }: ProductFormPro
       slug: form.slug.trim(),
       description: form.description.trim(),
       price: Number(form.price),
-      compareAtPrice: form.compareAtPrice ? Number(form.compareAtPrice) : undefined,
+      compareAtPrice: Number(form.compareAtPrice) > 0 ? Number(form.compareAtPrice) : undefined,
       currency: form.currency.trim() || 'USD',
       stock: Number(form.stock),
       categoryId: form.categoryId,
