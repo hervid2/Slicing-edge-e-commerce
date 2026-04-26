@@ -232,6 +232,7 @@ model Order {
   shippingAddress       Json
   items                 OrderItem[]
   statusHistory         OrderStatusHistory[]
+  returnRequests        ReturnRequest[]
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
 
@@ -267,6 +268,60 @@ model OrderStatusHistory {
   createdAt DateTime    @default(now())
 
   @@map("order_status_history")
+}
+
+// Return request statuses covering the full admin workflow.
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REFUNDED
+}
+
+// Customer return requests linked to a specific order.
+model ReturnRequest {
+  id          String       @id @default(cuid())
+  orderId     String
+  order       Order        @relation(fields: [orderId], references: [id])
+  email       String
+  reason      String
+  description String       @db.Text
+  status      ReturnStatus @default(PENDING)
+  adminNote   String?      @db.Text
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+  @@map("return_requests")
+}
+
+// Contact form submissions from store visitors.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([isRead])
+  @@map("contact_messages")
+}
+
+// Frequently asked questions managed by admins.
+model FaqEntry {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   @db.Text
+  position  Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, position])
+  @@map("faq_entries")
 }
 
 // Product reviews are constrained to one review per user/product pair.

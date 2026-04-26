@@ -22,6 +22,9 @@ import { wishlistRoutes } from './modules/wishlist/wishlist.controller';
 import { metricsRoutes } from './modules/metrics/metrics.controller';
 import { userRoutes } from './modules/user/user.controller';
 import { chatbotRoutes } from './modules/chatbot/chatbot.controller';
+import { returnRoutes } from './modules/return/return.controller';
+import { contactRoutes } from './modules/contact/contact.controller';
+import { faqRoutes } from './modules/faq/faq.controller';
 import { loggerConfig } from './lib/logger';
 
 const PORT = Number(process.env.PORT) || 3001;
@@ -127,6 +130,9 @@ export async function buildApp({ overridePrisma }: BuildAppOptions = {}) {
   await app.register(metricsRoutes, { prefix: '/api' });
   await app.register(userRoutes, { prefix: '/api' });
   await app.register(chatbotRoutes, { prefix: '/api' });
+  await app.register(returnRoutes, { prefix: '/api' });
+  await app.register(contactRoutes, { prefix: '/api' });
+  await app.register(faqRoutes, { prefix: '/api' });
 
   return app;
 }
