@@ -22,7 +22,7 @@ const CSP = [
   "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://browser.sentry-cdn.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://images.unsplash.com https://images.pexels.com",
+  `img-src 'self' data: blob: ${apiOrigin} https://res.cloudinary.com https://lh3.googleusercontent.com https://images.unsplash.com https://images.pexels.com`,
   // In production only the configured API URL is needed; localhost kept for dev.
   `connect-src 'self' ${apiOrigin}${isProd ? '' : ' http://localhost:3001'} https://*.sentry.io https://vitals.vercel-insights.com`,
   "frame-src https://js.stripe.com",
@@ -53,6 +53,13 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@slicing-edge/shared", "@slicing-edge/db"],
   images: {
     remotePatterns: [
+      {
+        // Local API — images uploaded by admin
+        protocol: "http",
+        hostname: "localhost",
+        port: "3001",
+        pathname: "/uploads/**",
+      },
       {
         protocol: "https",
         hostname: "res.cloudinary.com",

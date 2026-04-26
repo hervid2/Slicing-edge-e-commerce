@@ -1,6 +1,9 @@
+import path from 'node:path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import multipart from '@fastify/multipart';
+import staticFiles from '@fastify/static';
 import rawBody from 'fastify-raw-body';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
@@ -54,7 +57,7 @@ export async function buildApp({ overridePrisma }: BuildAppOptions = {}) {
           defaultSrc: ["'self'"],
           scriptSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
+          imgSrc: ["'self'", 'data:'],
           connectSrc: ["'self'"],
           frameSrc: ["'none'"],
           objectSrc: ["'none'"],
@@ -101,6 +104,14 @@ export async function buildApp({ overridePrisma }: BuildAppOptions = {}) {
     });
     await app.register(swaggerUi, { routePrefix: '/docs' });
   }
+
+  await app.register(multipart);
+
+  await app.register(staticFiles, {
+    root: path.join(process.cwd(), 'public', 'uploads'),
+    prefix: '/uploads/',
+    decorateReply: false,
+  });
 
   await app.register(rawBody, {
     field: 'rawBody',

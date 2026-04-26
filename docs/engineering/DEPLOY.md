@@ -10,7 +10,7 @@ Production deployment: **API → Railway** | **Web → Vercel** | **DB → Railw
 Vercel (Next.js)  ──→  Railway (Fastify API)  ──→  Railway PostgreSQL
                                 ↑
                          Upstash Redis
-                         Cloudinary CDN
+                         local /uploads/ (product images)
                          Stripe (webhooks)
                          Resend (email)
                          Groq AI (chatbot)
@@ -60,9 +60,6 @@ DATABASE_URL="postgresql://..." npm run db:seed:prod
 | `ALLOWED_ORIGINS` | ✅ | CSV of allowed CORS origins, e.g. `https://slicing-edge.vercel.app` |
 | `RESEND_API_KEY` | ✅ | From Resend dashboard |
 | `RESEND_FROM_EMAIL` | ✅ | Verified sender, e.g. `noreply@slicing-edge.com` |
-| `CLOUDINARY_CLOUD_NAME` | ✅ | Your Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | ✅ | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | ✅ | Cloudinary API secret |
 | `UPSTASH_REDIS_REST_URL` | ⚡ | Upstash Redis REST URL (recommended for multi-instance) |
 | `UPSTASH_REDIS_REST_TOKEN` | ⚡ | Upstash Redis REST token |
 | `ANTHROPIC_API_KEY` | 🤖 | Required only if AI chatbot is enabled |
@@ -192,8 +189,11 @@ Key checks:
 The production seed uses Unsplash CDN images as placeholders. To replace with real product photos:
 
 1. Log into the admin panel → Products → Edit
-2. Upload images via the **Upload Image** button (uses Cloudinary via `POST /api/admin/upload`)
-3. Or run a custom seed with your Cloudinary public IDs
+2. Click **Choose image** and select a file from your computer (JPG, PNG, WebP, GIF or AVIF, max 10 MB)
+3. The image is uploaded via `POST /api/admin/upload` (multipart/form-data) and stored in the API's `public/uploads/products/` directory
+4. The generated URL (`/uploads/products/<uuid>.<ext>`) is saved to the product record in the database
+
+> **Persistence on Railway:** Railway's filesystem resets on each deploy. To keep uploaded images between deploys, add a **Railway Volume** mounted at `/app/public/uploads` in your service settings. Alternatively, swap `UploadService.saveFile()` for an S3-compatible client (e.g. AWS S3, Cloudflare R2) — no other code changes needed.
 
 ---
 

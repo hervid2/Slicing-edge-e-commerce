@@ -87,14 +87,7 @@ export function ProductForm({ mode, categories, initialProduct }: ProductFormPro
     setIsUploading(true);
 
     try {
-      const fileAsDataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = () => reject(new Error('Failed to read image file'));
-        reader.readAsDataURL(file);
-      });
-
-      const uploaded = await uploadAdminImage(fileAsDataUrl, 'products');
+      const uploaded = await uploadAdminImage(file, 'products');
       setImages((prev) => [
         {
           url: uploaded.image.url,
@@ -318,31 +311,57 @@ export function ProductForm({ mode, categories, initialProduct }: ProductFormPro
           </div>
 
           <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] p-4">
-            <p className="text-sm font-medium text-[var(--color-foreground)]">Primary image</p>
+            <p className="text-sm font-medium text-[var(--color-foreground)]">Product images</p>
             <p className="mt-1 text-xs text-[var(--color-muted)]">
-              Uploads use the admin Cloudinary endpoint. You can upload one or more images.
+              Select one or more images from your computer. Supported formats: JPG, PNG, WebP, GIF, AVIF (max 10 MB each).
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <input type="file" accept="image/*" onChange={handleImageUpload} />
-              {isUploading ? <span className="text-sm text-[var(--color-muted)]">Uploading...</span> : null}
+              <label className="cursor-pointer rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-medium text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-background)]">
+                {isUploading ? 'Uploading…' : 'Choose image'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  disabled={isUploading}
+                  onChange={handleImageUpload}
+                />
+              </label>
+              {isUploading ? (
+                <span className="text-sm text-[var(--color-muted)]">Saving image…</span>
+              ) : null}
             </div>
 
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Product preview"
-                className="mt-4 h-40 w-40 rounded-md object-cover"
-              />
-            ) : null}
-
             {images.length > 0 ? (
-              <ul className="mt-4 space-y-1 text-sm text-[var(--color-muted)]">
-                {images.map((image) => (
-                  <li key={`${image.cloudinaryPublicId}-${image.position ?? 0}`}>
-                    {(image.position ?? 0) + 1}. {image.cloudinaryPublicId}
-                  </li>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {images.map((image, index) => (
+                  <div key={`${image.cloudinaryPublicId}-${index}`} className="relative">
+                    <img
+                      src={image.url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}${image.url}` : image.url}
+                      alt={image.altText || 'Product image'}
+                      className="h-28 w-28 rounded-md object-cover ring-1 ring-[var(--color-border)]"
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remove image"
+                      onClick={() =>
+                        setImages((prev) =>
+                          prev
+                            .filter((_, i) => i !== index)
+                            .map((img, i) => ({ ...img, position: i })),
+                        )
+                      }
+                      className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                    {index === 0 ? (
+                      <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 text-[10px] text-white">
+                        Primary
+                      </span>
+                    ) : null}
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : null}
           </div>
 

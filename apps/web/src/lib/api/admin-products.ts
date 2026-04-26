@@ -129,20 +129,34 @@ export async function deactivateAdminProduct(id: string) {
   });
 }
 
-export async function uploadAdminImage(file: string, folder = 'products') {
-  return request<{
-    image: {
-      url: string;
-      publicId: string;
-      width?: number;
-      height?: number;
-      format?: string;
-      bytes?: number;
-    };
-  }>('/api/admin/upload', {
+export async function uploadAdminImage(file: File, folder = 'products') {
+  const token = await getAccessToken();
+
+  if (!token) {
+    throw new Error('Unauthorized. Please sign in again.');
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('folder', folder);
+
+  const response = await fetch(`${API_URL}/api/admin/upload`, {
     method: 'POST',
-    body: JSON.stringify({ file, folder }),
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
   });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message =
+      typeof (data as { message?: unknown }).message === 'string'
+        ? (data as { message: string }).message
+        : 'Upload failed';
+    throw new Error(message);
+  }
+
+  return data as { image: { url: string; publicId: string } };
 }
 
 export async function getCategories() {

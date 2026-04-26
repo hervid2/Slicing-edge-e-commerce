@@ -59,7 +59,7 @@ It talks exclusively to the Fastify API (`apps/api`) over HTTP — no direct dat
 |---------|-------|-------------|
 | Dashboard | `/admin` | KPI cards (revenue, orders, products, users), 30-day chart, low-stock list, recent orders |
 | Products | `/admin/products` | Table with search; links to create/edit |
-| Create Product | `/admin/products/new` | Form with Cloudinary image upload |
+| Create Product | `/admin/products/new` | Form with local image upload (multipart, grid preview, max 10 MB) |
 | Edit Product | `/admin/products/[id]/edit` | Pre-filled form; deactivate/reactivate |
 | Orders | `/admin/orders` | Table with status selector; expandable row with items + timeline |
 | Users | `/admin/users` | Paginated user table with role management |

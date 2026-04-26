@@ -6,6 +6,9 @@ All notable changes to Slicing Edge are documented here, organized by feature mi
 
 ## [Unreleased]
 
+### Changed
+- **Admin image upload** — replaced Cloudinary with local file storage. `POST /api/admin/upload` now accepts `multipart/form-data`; files are saved to `apps/api/public/uploads/products/` and served by `@fastify/static`. The admin form sends a native `File` via `FormData` (no more base64/JSON). Admin product form shows an image grid with per-image remove buttons and a "Primary" label. No Cloudinary environment variables required.
+
 ### Planned
 - Performance: Core Web Vitals analysis and ISR/revalidation optimization
 - Monitoring: Sentry error tracking
@@ -153,16 +156,17 @@ All notable changes to Slicing Edge are documented here, organized by feature mi
 - Email notification sent when order status changes to `SHIPPED`
 
 **Day 4 — Admin product CRUD**
-- `POST /api/admin/products` create with Cloudinary image upload
+- `POST /api/admin/products` create with local image upload
 - `PUT /api/admin/products/:id` edit endpoint
 - `DELETE /api/admin/products/:id` soft-delete (deactivate) endpoint
 - `/admin/products/new` creation form with image upload
 - `/admin/products/[id]/edit` pre-filled edit form
 
-**Day 3 — Cloudinary image integration**
-- `POST /api/admin/upload` Cloudinary upload endpoint
+**Day 3 — Image upload integration**
+- `POST /api/admin/upload` multipart image upload endpoint; files saved to `public/uploads/products/`
+- Fastify serves uploaded images as static files at `/uploads/...` via `@fastify/static`
 - Updated product seed with real Pexels CDN image URLs
-- `next.config.ts` `remotePatterns` for Cloudinary and Pexels domains
+- `next.config.ts` `remotePatterns` for API origin and Pexels domains
 - ProductCard and Product Detail render images via Next.js `<Image>`
 
 **Day 2 — Transactional emails**

@@ -9,7 +9,7 @@ E-commerce platform for premium kitchen knives. Turborepo monorepo with Next.js 
 - **Auth**: Auth.js v5 (NextAuth) — email/password + Google OAuth, JWT strategy
 - **Payments**: Stripe Checkout Sessions + Webhooks, Stripe Tax
 - **Email**: Resend + React Email
-- **Images**: Cloudinary CDN + Next.js `<Image>`
+- **Images**: Local file storage — `@fastify/multipart` (upload) + `@fastify/static` (serve) + Next.js `<Image>`
 - **Rate Limiting**: Upstash Redis + `@upstash/ratelimit`
 - **Validation**: Zod (shared schemas in `packages/shared`)
 - **Logging**: Pino (structured, with redaction)

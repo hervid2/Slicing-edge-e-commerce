@@ -79,15 +79,20 @@ https://<railway-api-url>/api/checkout/webhook
 
 ---
 
-### Cloudinary (Image Uploads)
+### Image Uploads (local file storage)
 
-| Variable | Service | Required | Description |
-|----------|---------|----------|-------------|
-| `CLOUDINARY_CLOUD_NAME` | API | ✅ | From Cloudinary Dashboard → Account Details. |
-| `CLOUDINARY_API_KEY` | API | ✅ | From Cloudinary Dashboard → API Keys. |
-| `CLOUDINARY_API_SECRET` | API | ✅ | Never expose to browser. Kept server-side (API) only. |
+Product images are uploaded via `POST /api/admin/upload` (multipart/form-data) and saved to the API server's local filesystem under `apps/api/public/uploads/products/`. The API serves them as static files at `/uploads/...` via `@fastify/static`.
 
-Used by `POST /api/admin/upload` to upload product images. Uploaded URLs are stored in `Product.images`.
+**No external service or environment variables are required** for image uploads.
+
+| Consideration | Detail |
+|--------------|--------|
+| Storage location | `apps/api/public/uploads/` (relative to API working directory) |
+| Max file size | 10 MB per image |
+| Allowed formats | JPG, JPEG, PNG, WebP, GIF, AVIF |
+| Served at | `http(s)://<api-url>/uploads/products/<uuid>.<ext>` |
+
+> **Production note:** The `public/uploads/` directory is ephemeral on Railway (resets on re-deploy). For persistent image storage in production, mount a Railway Volume to the `public/uploads/` path, or migrate to an object storage provider (e.g. AWS S3, Cloudflare R2) by replacing `UploadService.saveFile()` with the provider's SDK.
 
 ---
 

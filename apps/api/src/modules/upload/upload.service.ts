@@ -1,83 +1,31 @@
-import type { AdminUploadInput } from '@slicing-edge/shared';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 import { AppError } from '../../middleware/error-handler';
 
-interface CloudinaryUploadResponse {
-  secure_url?: string;
-  public_id?: string;
-  width?: number;
-  height?: number;
-  format?: string;
-  bytes?: number;
-  error?: { message?: string };
-}
+const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif']);
 
 export class UploadService {
   /**
-   * Uploads an image to Cloudinary using signed server-side upload.
+   * Saves an uploaded image buffer to the local uploads directory and returns its public URL.
    */
-  async uploadImage(input: AdminUploadInput) {
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  async saveFile(buffer: Buffer, originalName: string, folder = 'products') {
+    const ext = path.extname(originalName).toLowerCase() || '.jpg';
 
-    if (!cloudName || !apiKey || !apiSecret) {
-      throw new AppError('Cloudinary is not configured. Missing CLOUDINARY_* variables.', 500);
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
+      throw new AppError('Unsupported image format. Allowed: jpg, jpeg, png, webp, gif, avif', 400);
     }
 
-    const timestamp = Math.floor(Date.now() / 1000);
-    const paramsToSign: Record<string, string | number> = { timestamp };
+    const dir = path.join(UPLOADS_DIR, folder);
+    await fs.mkdir(dir, { recursive: true });
 
-    if (input.folder) {
-      paramsToSign.folder = input.folder;
-    }
-
-    if (input.publicId) {
-      paramsToSign.public_id = input.publicId;
-    }
-
-    const signature = this.createCloudinarySignature(paramsToSign, apiSecret);
-
-    const body = new URLSearchParams({
-      file: input.file,
-      api_key: apiKey,
-      timestamp: String(timestamp),
-      signature,
-      ...(input.folder ? { folder: input.folder } : {}),
-      ...(input.publicId ? { public_id: input.publicId } : {}),
-    });
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: body.toString(),
-    });
-
-    const data = (await response.json().catch(() => ({}))) as CloudinaryUploadResponse;
-
-    if (!response.ok || !data.secure_url || !data.public_id) {
-      throw new AppError(data.error?.message || 'Cloudinary upload failed', 502);
-    }
+    const filename = `${crypto.randomUUID()}${ext}`;
+    await fs.writeFile(path.join(dir, filename), buffer);
 
     return {
-      url: data.secure_url,
-      publicId: data.public_id,
-      width: data.width,
-      height: data.height,
-      format: data.format,
-      bytes: data.bytes,
+      url: `/uploads/${folder}/${filename}`,
+      publicId: `${folder}/${filename}`,
     };
-  }
-
-  private createCloudinarySignature(params: Record<string, string | number>, apiSecret: string) {
-    const serialized = Object.entries(params)
-      .filter(([, value]) => value !== undefined && value !== null && value !== '')
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `${key}=${value}`)
-      .join('&');
-
-    return crypto.createHash('sha1').update(`${serialized}${apiSecret}`).digest('hex');
   }
 }
