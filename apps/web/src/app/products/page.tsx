@@ -33,6 +33,23 @@ interface SearchParams {
   sortBy?: string;
 }
 
+interface CategoryFilter {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+async function getCategories(): Promise<CategoryFilter[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/categories`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json() as { categories: CategoryFilter[] };
+    return data.categories ?? [];
+  } catch {
+    return [];
+  }
+}
+
 async function getProducts(searchParams: SearchParams) {
   const params = new URLSearchParams();
   if (searchParams.page) params.set('page', searchParams.page);
@@ -68,7 +85,7 @@ export default async function ProductsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const data = await getProducts(params);
+  const [data, categories] = await Promise.all([getProducts(params), getCategories()]);
 
   const products: ProductData[] = data?.products ?? [];
   const pagination = data?.pagination ?? { page: 1, totalPages: 1, total: 0 };
@@ -89,17 +106,17 @@ export default async function ProductsPage({
 
       {/* Filters */}
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        {['chef-knives', 'santoku-knives', 'paring-knives'].map((cat) => (
+        {categories.map((cat) => (
           <a
-            key={cat}
-            href={`/products?category=${cat}${params.search ? `&search=${encodeURIComponent(params.search)}` : ''}`}
+            key={cat.id}
+            href={`/products?category=${cat.slug}${params.search ? `&search=${encodeURIComponent(params.search)}` : ''}`}
             className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
-              params.category === cat
+              params.category === cat.slug
                 ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
                 : 'border-[var(--color-border)] text-[var(--color-foreground)] hover:border-[var(--color-accent)]'
             }`}
           >
-            {cat.replace('-', ' ').replace(/(^\w|\s\w)/g, (m) => m.toUpperCase()).replace('Knives', '').trim()}
+            {cat.name}
           </a>
         ))}
         {params.search && (

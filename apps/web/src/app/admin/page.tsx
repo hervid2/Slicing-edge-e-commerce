@@ -24,6 +24,7 @@ export default async function AdminDashboardPage() {
         {[
           { href: '/admin/orders', label: 'Orders', desc: 'Update order statuses.' },
           { href: '/admin/products', label: 'Products', desc: 'Manage catalog and stock.' },
+          { href: '/admin/categories', label: 'Categories', desc: 'Add or deactivate knife categories.' },
           { href: '/admin/users', label: 'Users', desc: 'View and manage users.' },
         ].map((link) => (
           <Link

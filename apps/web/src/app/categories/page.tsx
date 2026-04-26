@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-/** ISR: categories change infrequently — revalidate every hour */
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 

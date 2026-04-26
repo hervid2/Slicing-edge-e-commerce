@@ -113,6 +113,34 @@ export async function categoryRoutes(app: FastifyInstance) {
     },
   );
 
+  app.get(
+    '/admin/categories',
+    {
+      preHandler: [authenticate, requireAdmin],
+      schema: {
+        tags: ['Admin', 'Categories'],
+        summary: 'List all categories (admin)',
+        description: 'Admin endpoint returning all categories including inactive ones.',
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              categories: { type: 'array', items: { type: 'object', additionalProperties: true } },
+            },
+          },
+        },
+      },
+    },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      const categories = await app.prisma.category.findMany({
+        orderBy: { position: 'asc' },
+        include: { _count: { select: { products: true } } },
+      });
+      return reply.send({ categories });
+    },
+  );
+
   app.patch<{ Params: { id: string } }>(
     '/categories/:id',
     {
