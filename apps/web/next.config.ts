@@ -3,9 +3,18 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const isProd = process.env.NODE_ENV === 'production';
 
-// API origin allowed by connect-src.
+// API origin allowed by connect-src / img-src and for remotePatterns.
 // In production the env var holds the Railway URL; in dev fall back to localhost.
 const apiOrigin = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+// Parse the API URL so we can build a typed remotePattern entry for Next.js Image.
+const apiUrl = (() => {
+  try {
+    return new URL(apiOrigin);
+  } catch {
+    return new URL('http://localhost:3001');
+  }
+})();
 
 /**
  * Content-Security-Policy for the web app.
@@ -54,11 +63,11 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        // Local API — images uploaded by admin
-        protocol: "http",
-        hostname: "localhost",
-        port: "3001",
-        pathname: "/uploads/**",
+        // API server (dev: localhost:3001, prod: Railway URL) — uploaded product images
+        protocol: apiUrl.protocol.replace(':', '') as 'http' | 'https',
+        hostname: apiUrl.hostname,
+        ...(apiUrl.port ? { port: apiUrl.port } : {}),
+        pathname: '/uploads/**',
       },
       {
         protocol: "https",

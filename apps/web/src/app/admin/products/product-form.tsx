@@ -336,7 +336,7 @@ export function ProductForm({ mode, categories, initialProduct }: ProductFormPro
                 {images.map((image, index) => (
                   <div key={`${image.cloudinaryPublicId}-${index}`} className="relative">
                     <img
-                      src={image.url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}${image.url}` : image.url}
+                      src={image.url}
                       alt={image.altText || 'Product image'}
                       className="h-28 w-28 rounded-md object-cover ring-1 ring-[var(--color-border)]"
                     />

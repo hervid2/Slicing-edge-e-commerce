@@ -45,7 +45,16 @@ export async function uploadRoutes(app: FastifyInstance) {
       }
 
       const buffer = await data.toBuffer();
-      const image = await uploadService.saveFile(buffer, data.filename);
+      const saved = await uploadService.saveFile(buffer, data.filename);
+
+      // Build absolute URL so stored paths work from any origin (Vercel, Railway, etc.)
+      const proto =
+        (request.headers['x-forwarded-proto'] as string | undefined)
+          ?.split(',')[0]
+          .trim() ?? 'http';
+      const host = request.headers['host'] ?? 'localhost:3001';
+      const image = { ...saved, url: `${proto}://${host}${saved.url}` };
+
       return reply.status(201).send({ image });
     },
   );
