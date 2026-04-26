@@ -1,8 +1,9 @@
 import { z } from 'zod';
 
 export const productImageInputSchema = z.object({
-  url: z.string().url('Image URL must be a valid URL'),
-  cloudinaryPublicId: z.string().min(1, 'Image public id is required'),
+  // Accepts both full URLs (https://...) and relative paths (/uploads/...)
+  url: z.string().min(1, 'Image URL is required'),
+  cloudinaryPublicId: z.string().optional().default(''),
   altText: z.string().optional(),
   position: z.number().int().min(0).default(0),
 });

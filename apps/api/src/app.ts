@@ -111,6 +111,11 @@ export async function buildApp({ overridePrisma }: BuildAppOptions = {}) {
     root: path.join(process.cwd(), 'public', 'uploads'),
     prefix: '/uploads/',
     decorateReply: false,
+    setHeaders(res) {
+      // Allow cross-origin image loading from the Vercel frontend
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    },
   });
 
   await app.register(rawBody, {

@@ -131,7 +131,7 @@ export async function productRoutes(app: FastifyInstance) {
               type: 'array',
               items: {
                 type: 'object',
-                required: ['url', 'cloudinaryPublicId'],
+                required: ['url'],
                 properties: {
                   url: { type: 'string' },
                   cloudinaryPublicId: { type: 'string' },
@@ -263,7 +263,7 @@ export async function productRoutes(app: FastifyInstance) {
               type: 'array',
               items: {
                 type: 'object',
-                required: ['url', 'cloudinaryPublicId'],
+                required: ['url'],
                 properties: {
                   url: { type: 'string' },
                   cloudinaryPublicId: { type: 'string' },
