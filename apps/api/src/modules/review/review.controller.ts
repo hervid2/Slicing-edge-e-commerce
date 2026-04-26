@@ -38,8 +38,8 @@ export async function reviewRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              reviews: { type: 'array', items: { type: 'object' } },
-              pagination: { type: 'object' },
+              reviews: { type: 'array', items: { type: 'object', additionalProperties: true } },
+              pagination: { type: 'object', additionalProperties: true },
             },
           },
         },

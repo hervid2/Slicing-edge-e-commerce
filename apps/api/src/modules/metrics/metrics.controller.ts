@@ -21,11 +21,12 @@ export async function metricsRoutes(app: FastifyInstance) {
         response: {
           200: {
             type: 'object',
+            additionalProperties: true,
             properties: {
-              kpis: { type: 'object' },
-              ordersByDay: { type: 'array', items: { type: 'object' } },
-              recentOrders: { type: 'array', items: { type: 'object' } },
-              lowStockProducts: { type: 'array', items: { type: 'object' } },
+              kpis: { type: 'object', additionalProperties: true },
+              ordersByDay: { type: 'array', items: { type: 'object', additionalProperties: true } },
+              recentOrders: { type: 'array', items: { type: 'object', additionalProperties: true } },
+              lowStockProducts: { type: 'array', items: { type: 'object', additionalProperties: true } },
             },
           },
         },

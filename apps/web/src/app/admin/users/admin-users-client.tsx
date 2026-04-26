@@ -383,7 +383,7 @@ export function AdminUsersClient() {
                         />
                       ) : (
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-accent)] text-xs font-bold text-white">
-                          {(user.name?.[0] ?? user.email[0] ?? '?').toUpperCase()}
+                          {(user.name?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}
                         </div>
                       )}
                       <div>

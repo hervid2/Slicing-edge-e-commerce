@@ -55,7 +55,7 @@ export async function chatbotRoutes(app: FastifyInstance) {
               products: {
                 type: 'array',
                 description: 'Products surfaced by product-search tools (may be empty)',
-                items: { type: 'object' },
+                items: { type: 'object', additionalProperties: true },
               },
             },
           },

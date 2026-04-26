@@ -38,9 +38,10 @@ export async function userRoutes(app: FastifyInstance) {
         response: {
           200: {
             type: 'object',
+            additionalProperties: true,
             properties: {
-              users: { type: 'array', items: { type: 'object' } },
-              pagination: { type: 'object' },
+              users: { type: 'array', items: { type: 'object', additionalProperties: true } },
+              pagination: { type: 'object', additionalProperties: true },
             },
           },
         },

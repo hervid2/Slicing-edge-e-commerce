@@ -26,7 +26,7 @@ export async function wishlistRoutes(app: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              items: { type: 'array', items: { type: 'object' } },
+              items: { type: 'array', items: { type: 'object', additionalProperties: true } },
             },
           },
         },
