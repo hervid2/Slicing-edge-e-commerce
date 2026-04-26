@@ -108,7 +108,10 @@ export async function categoryRoutes(app: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = createCategorySchema.parse(request.body);
-      const category = await app.prisma.category.create({ data: body });
+      const category = await app.prisma.category.create({
+        data: body,
+        include: { _count: { select: { products: true } } },
+      });
       return reply.status(201).send({ category });
     },
   );
@@ -183,6 +186,7 @@ export async function categoryRoutes(app: FastifyInstance) {
       const category = await app.prisma.category.update({
         where: { id: request.params.id },
         data: body,
+        include: { _count: { select: { products: true } } },
       });
       return reply.send({ category });
     },

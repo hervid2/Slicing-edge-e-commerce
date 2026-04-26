@@ -274,7 +274,7 @@ export function AdminCategoriesClient() {
                     {cat.slug}
                   </td>
                   <td className="px-4 py-3 text-[var(--color-muted)]">
-                    {cat._count.products}
+                    {cat._count?.products ?? 0}
                   </td>
                   <td className="px-4 py-3">
                     {cat.isActive ? (
