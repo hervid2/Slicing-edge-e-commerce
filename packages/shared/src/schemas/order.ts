@@ -24,6 +24,8 @@ export const guestOrderTrackingSchema = z.object({
 export const updateOrderStatusSchema = z.object({
   status: z.enum(['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
   note: z.string().optional(),
+  trackingNumber: z.string().max(100).optional(),
+  carrierName: z.string().max(80).optional(),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

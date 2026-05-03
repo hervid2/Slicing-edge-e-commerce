@@ -84,25 +84,39 @@ export class OrderService {
 
   /**
    * Updates order status and appends an order status history entry.
+   * Persists trackingNumber and carrierName when transitioning to SHIPPED.
    * Sends a shipping notification email when status transitions to SHIPPED.
    *
    * @throws {AppError} When the order does not exist.
    */
-  async updateOrderStatus(orderId: string, status: string, note?: string) {
+  async updateOrderStatus(
+    orderId: string,
+    status: string,
+    note?: string,
+    trackingNumber?: string,
+    carrierName?: string,
+    changedByAdminId?: string,
+  ) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { user: { select: { name: true, email: true } } },
     });
     if (!order) throw new AppError('Order not found', 404);
 
+    const orderUpdate: Record<string, unknown> = { status };
+    if (status === 'SHIPPED') {
+      if (trackingNumber) orderUpdate.trackingNumber = trackingNumber;
+      if (carrierName) orderUpdate.carrierName = carrierName;
+    }
+
     const [updatedOrder] = await this.prisma.$transaction([
       this.prisma.order.update({
         where: { id: orderId },
-        data: { status: status as any },
+        data: orderUpdate as any,
         include: { items: true, statusHistory: { orderBy: { createdAt: 'desc' } } },
       }),
       this.prisma.orderStatusHistory.create({
-        data: { orderId, status: status as any, note },
+        data: { orderId, status: status as any, note, changedByAdminId },
       }),
     ]);
 

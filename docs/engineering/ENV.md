@@ -50,7 +50,7 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/slicing_edge?schema=
 
 | Variable | Service | Required | Description |
 |----------|---------|----------|-------------|
-| `STRIPE_SECRET_KEY` | API | ✅ | Server-side only. `sk_test_...` (test) or `sk_live_...` (production). Never expose to browser. |
+| `STRIPE_SECRET_KEY` | API | ✅ | Server-side only. `sk_test_...` (test) or `sk_live_...` (production). Never expose to browser. Used for both Checkout Sessions and automatic refunds when a return request transitions to `REFUNDED`. |
 | `STRIPE_WEBHOOK_SECRET` | API | ✅ | From Stripe Dashboard → Webhooks → signing secret (`whsec_...`). Local: use `stripe listen` output. |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Web | ✅ | Safe to expose to browser (`pk_test_...` or `pk_live_...`). |
 
@@ -146,16 +146,13 @@ Before deploying, ensure all of these are set in the Railway (API) and Vercel (W
 
 - [ ] `DATABASE_URL`
 - [ ] `AUTH_SECRET`
-- [ ] `STRIPE_SECRET_KEY`
+- [ ] `STRIPE_SECRET_KEY` — also used for automatic Stripe refunds in the RMA flow
 - [ ] `STRIPE_WEBHOOK_SECRET`
 - [ ] `FRONTEND_URL`
 - [ ] `ALLOWED_ORIGINS`
 - [ ] `RESEND_API_KEY`
 - [ ] `RESEND_FROM_EMAIL`
-- [ ] `CLOUDINARY_CLOUD_NAME`
-- [ ] `CLOUDINARY_API_KEY`
-- [ ] `CLOUDINARY_API_SECRET`
-- [ ] `ANTHROPIC_API_KEY`
+- [ ] `GROQ_API_KEY`
 - [ ] `UPSTASH_REDIS_REST_URL`
 - [ ] `UPSTASH_REDIS_REST_TOKEN`
 - [ ] `NODE_ENV=production`

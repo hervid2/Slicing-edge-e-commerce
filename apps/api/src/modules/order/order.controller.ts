@@ -123,6 +123,8 @@ export async function orderRoutes(app: FastifyInstance) {
           properties: {
             status: { type: 'string' },
             note: { type: 'string' },
+            trackingNumber: { type: 'string' },
+            carrierName: { type: 'string' },
           },
         },
         response: {
@@ -136,8 +138,16 @@ export async function orderRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { status, note } = updateOrderStatusSchema.parse(request.body);
-      const order = await orderService.updateOrderStatus(request.params.id, status, note);
+      const { status, note, trackingNumber, carrierName } = updateOrderStatusSchema.parse(request.body);
+      const adminId = request.user?.sub;
+      const order = await orderService.updateOrderStatus(
+        request.params.id,
+        status,
+        note,
+        trackingNumber,
+        carrierName,
+        adminId,
+      );
       return reply.send({ order });
     },
   );

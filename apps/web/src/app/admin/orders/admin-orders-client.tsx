@@ -49,22 +49,30 @@ function formatDate(iso: string) {
 interface StatusSelectProps {
   orderId: string;
   current: OrderStatus;
-  onUpdated: (orderId: string, status: OrderStatus) => void;
+  currentTracking: { trackingNumber: string | null; carrierName: string | null };
+  onUpdated: (orderId: string, status: OrderStatus, tracking?: { trackingNumber: string; carrierName: string }) => void;
 }
 
-function StatusSelect({ orderId, current, onUpdated }: StatusSelectProps) {
+function StatusSelect({ orderId, current, currentTracking, onUpdated }: StatusSelectProps) {
   const [value, setValue] = useState<OrderStatus>(current);
+  const [trackingNumber, setTrackingNumber] = useState(currentTracking.trackingNumber ?? '');
+  const [carrierName, setCarrierName] = useState(currentTracking.carrierName ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleChange(next: OrderStatus) {
-    if (next === value) return;
+  const pendingShipped = value === 'SHIPPED';
+
+  async function handleSave() {
     setError('');
     setLoading(true);
     try {
-      await updateAdminOrderStatus(orderId, next);
-      setValue(next);
-      onUpdated(orderId, next);
+      const options =
+        value === 'SHIPPED'
+          ? { trackingNumber: trackingNumber || undefined, carrierName: carrierName || undefined }
+          : {};
+      await updateAdminOrderStatus(orderId, value, options);
+      setValue(value);
+      onUpdated(orderId, value, value === 'SHIPPED' ? { trackingNumber, carrierName } : undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Update failed');
     } finally {
@@ -72,13 +80,15 @@ function StatusSelect({ orderId, current, onUpdated }: StatusSelectProps) {
     }
   }
 
+  const dirty = value !== current;
+
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       <select
         aria-label="Change order status"
         value={value}
         disabled={loading}
-        onChange={(e) => handleChange(e.target.value as OrderStatus)}
+        onChange={(e) => setValue(e.target.value as OrderStatus)}
         className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-50"
       >
         {ORDER_STATUSES.map((s) => (
@@ -87,6 +97,40 @@ function StatusSelect({ orderId, current, onUpdated }: StatusSelectProps) {
           </option>
         ))}
       </select>
+
+      {pendingShipped && (
+        <div className="flex flex-col gap-1">
+          <input
+            type="text"
+            value={trackingNumber}
+            onChange={(e) => setTrackingNumber(e.target.value)}
+            placeholder="Tracking number"
+            disabled={loading}
+            aria-label="Tracking number"
+            className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-50"
+          />
+          <input
+            type="text"
+            value={carrierName}
+            onChange={(e) => setCarrierName(e.target.value)}
+            placeholder="Carrier (e.g. Servientrega)"
+            disabled={loading}
+            aria-label="Carrier name"
+            className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-50"
+          />
+        </div>
+      )}
+
+      {dirty && (
+        <button
+          type="button"
+          onClick={() => void handleSave()}
+          disabled={loading}
+          className="inline-flex h-7 items-center justify-center rounded bg-[var(--color-accent)] px-3 text-xs font-semibold text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-40"
+        >
+          {loading ? 'Saving…' : 'Save'}
+        </button>
+      )}
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
     </div>
   );
@@ -96,7 +140,7 @@ interface OrderRowProps {
   order: AdminOrder;
   isExpanded: boolean;
   onToggle: () => void;
-  onStatusUpdated: (orderId: string, status: OrderStatus) => void;
+  onStatusUpdated: (orderId: string, status: OrderStatus, tracking?: { trackingNumber: string; carrierName: string }) => void;
 }
 
 function OrderRow({ order, isExpanded, onToggle, onStatusUpdated }: OrderRowProps) {
@@ -128,6 +172,7 @@ function OrderRow({ order, isExpanded, onToggle, onStatusUpdated }: OrderRowProp
           <StatusSelect
             orderId={order.id}
             current={order.status}
+            currentTracking={{ trackingNumber: order.trackingNumber, carrierName: order.carrierName }}
             onUpdated={onStatusUpdated}
           />
         </td>
@@ -211,6 +256,19 @@ function OrderRow({ order, isExpanded, onToggle, onStatusUpdated }: OrderRowProp
                 {order.guestEmail ? (
                   <p className="mt-2 text-sm text-[var(--color-muted)]">{order.guestEmail}</p>
                 ) : null}
+                {(order.trackingNumber || order.carrierName) && (
+                  <div className="mt-3 border-t border-[var(--color-border)] pt-3">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+                      Tracking
+                    </p>
+                    {order.carrierName && (
+                      <p className="text-sm text-[var(--color-foreground)]">{order.carrierName}</p>
+                    )}
+                    {order.trackingNumber && (
+                      <p className="font-mono text-xs text-[var(--color-muted)]">{order.trackingNumber}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Status timeline */}
@@ -264,9 +322,23 @@ export function AdminOrdersClient() {
       .finally(() => setLoading(false));
   }, []);
 
-  function handleStatusUpdated(orderId: string, status: OrderStatus) {
+  function handleStatusUpdated(
+    orderId: string,
+    status: OrderStatus,
+    tracking?: { trackingNumber: string; carrierName: string },
+  ) {
     setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status } : o)),
+      prev.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status,
+              ...(tracking
+                ? { trackingNumber: tracking.trackingNumber, carrierName: tracking.carrierName }
+                : {}),
+            }
+          : o,
+      ),
     );
   }
 

@@ -228,6 +228,8 @@ model Order {
   currency              String               @default("USD")
   stripePaymentIntentId String?              @unique
   stripeSessionId       String?              @unique
+  trackingNumber        String?
+  carrierName           String?
   // Shipping address snapshot captured at checkout time.
   shippingAddress       Json
   items                 OrderItem[]
@@ -258,24 +260,28 @@ model OrderItem {
   @@map("order_items")
 }
 
-// Append-only timeline of order state transitions.
+// Append-only timeline of order state transitions for full auditability.
 model OrderStatusHistory {
-  id        String      @id @default(cuid())
-  orderId   String
-  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  status    OrderStatus
-  note      String?
-  createdAt DateTime    @default(now())
+  id               String      @id @default(cuid())
+  orderId          String
+  order            Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status           OrderStatus
+  note             String?
+  changedByAdminId String?
+  createdAt        DateTime    @default(now())
 
   @@map("order_status_history")
 }
 
-// Return request statuses covering the full admin workflow.
+// Return request statuses covering the full admin RMA workflow.
 enum ReturnStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  REFUNDED
+  PENDING      // Customer submitted, awaiting admin review
+  APPROVED     // Admin approved the return
+  REJECTED     // Admin rejected the return
+  LABEL_ISSUED // Return shipping label sent to customer
+  RECEIVED     // Product received back at warehouse
+  REFUNDED     // Refund processed (Stripe)
+  CLOSED       // Process complete, no further action needed
 }
 
 // Customer return requests linked to a specific order.

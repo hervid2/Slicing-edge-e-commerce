@@ -10,8 +10,18 @@ const createReturnSchema = z.object({
   description: z.string().min(10).max(2000),
 });
 
+const ALL_RETURN_STATUSES = [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+  'LABEL_ISSUED',
+  'RECEIVED',
+  'REFUNDED',
+  'CLOSED',
+] as const;
+
 const updateStatusSchema = z.object({
-  status: z.enum(['PENDING', 'APPROVED', 'REJECTED', 'REFUNDED']),
+  status: z.enum(ALL_RETURN_STATUSES),
   adminNote: z.string().max(1000).optional(),
 });
 
@@ -64,7 +74,7 @@ export async function returnRoutes(app: FastifyInstance) {
           properties: {
             page: { type: 'string' },
             limit: { type: 'string' },
-            status: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED', 'REFUNDED'] },
+            status: { type: 'string', enum: ALL_RETURN_STATUSES },
           },
         },
         response: {
@@ -75,12 +85,7 @@ export async function returnRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const page = Number(request.query.page) || 1;
       const limit = Number(request.query.limit) || 20;
-      const status = request.query.status as
-        | 'PENDING'
-        | 'APPROVED'
-        | 'REJECTED'
-        | 'REFUNDED'
-        | undefined;
+      const status = request.query.status as import('./return.service').ReturnStatus | undefined;
       const result = await service.listReturns(page, limit, status);
       return reply.send(result);
     },
@@ -104,7 +109,7 @@ export async function returnRoutes(app: FastifyInstance) {
           type: 'object',
           required: ['status'],
           properties: {
-            status: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED', 'REFUNDED'] },
+            status: { type: 'string', enum: ALL_RETURN_STATUSES },
             adminNote: { type: 'string' },
           },
         },

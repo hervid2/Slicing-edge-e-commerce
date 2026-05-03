@@ -1,6 +1,13 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-export type ReturnStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'REFUNDED';
+export type ReturnStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'LABEL_ISSUED'
+  | 'RECEIVED'
+  | 'REFUNDED'
+  | 'CLOSED';
 
 export interface ReturnRequest {
   id: string;

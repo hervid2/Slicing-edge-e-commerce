@@ -28,6 +28,8 @@ export interface AdminOrder {
   currency: string;
   shippingAddress: Record<string, string>;
   guestEmail: string | null;
+  trackingNumber: string | null;
+  carrierName: string | null;
   user: { name: string | null; email: string } | null;
   items: AdminOrderItem[];
   statusHistory: AdminOrderStatusHistory[];
@@ -80,15 +82,15 @@ export async function listAdminOrders(page = 1, limit = 20) {
 }
 
 /**
- * Updates an order's status and optionally adds a note to the status history.
+ * Updates an order's status and optionally adds a note, tracking number, and carrier name.
  */
 export async function updateAdminOrderStatus(
   orderId: string,
   status: OrderStatus,
-  note?: string,
+  options?: { note?: string; trackingNumber?: string; carrierName?: string },
 ) {
   return request<{ order: AdminOrder }>(`/api/admin/orders/${orderId}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ status, note }),
+    body: JSON.stringify({ status, ...options }),
   });
 }

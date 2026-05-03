@@ -12,10 +12,31 @@ const STATUS_COLORS: Record<ReturnStatus, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
   APPROVED: 'bg-green-100 text-green-700',
   REJECTED: 'bg-red-100 text-red-700',
+  LABEL_ISSUED: 'bg-purple-100 text-purple-700',
+  RECEIVED: 'bg-sky-100 text-sky-700',
   REFUNDED: 'bg-blue-100 text-blue-700',
+  CLOSED: 'bg-gray-100 text-gray-600',
 };
 
-const ALL_STATUSES: ReturnStatus[] = ['PENDING', 'APPROVED', 'REJECTED', 'REFUNDED'];
+const STATUS_LABELS: Record<ReturnStatus, string> = {
+  PENDING: 'Pending',
+  APPROVED: 'Approved',
+  REJECTED: 'Rejected',
+  LABEL_ISSUED: 'Label Issued',
+  RECEIVED: 'Received',
+  REFUNDED: 'Refunded',
+  CLOSED: 'Closed',
+};
+
+const ALL_STATUSES: ReturnStatus[] = [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+  'LABEL_ISSUED',
+  'RECEIVED',
+  'REFUNDED',
+  'CLOSED',
+];
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -59,7 +80,7 @@ function StatusSelect({ item, onUpdated }: StatusSelectProps) {
         className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-50"
       >
         {ALL_STATUSES.map((s) => (
-          <option key={s} value={s}>{s}</option>
+          <option key={s} value={s}>{STATUS_LABELS[s]}</option>
         ))}
       </select>
       <input
@@ -154,12 +175,12 @@ export function AdminReturnsClient() {
           className="h-10 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
         >
           <option value="">All statuses</option>
-          {ALL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+          {ALL_STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
         </select>
         {!loading && !error && (
           <p className="ml-auto text-sm text-[var(--color-muted)]">
             {total} request{total !== 1 ? 's' : ''}
-            {statusFilter ? ` with status ${statusFilter}` : ''}
+            {statusFilter ? ` · ${STATUS_LABELS[statusFilter]}` : ''}
           </p>
         )}
       </div>
@@ -204,7 +225,7 @@ export function AdminReturnsClient() {
                     <td className="px-4 py-3">{item.email}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLORS[item.status]}`}>
-                        {item.status}
+                        {STATUS_LABELS[item.status]}
                       </span>
                     </td>
                     <td className="px-4 py-3">

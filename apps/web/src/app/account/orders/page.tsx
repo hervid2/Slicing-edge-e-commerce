@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireAuth } from '@/lib/auth-guard';
 import { ShoppingBag } from 'lucide-react';
+import { ReturnRequestModal } from './return-request-modal';
 
 export const metadata: Metadata = { title: 'My Orders' };
 
@@ -34,6 +35,8 @@ interface Order {
   total: number | string;
   currency: string;
   shippingAddress: Record<string, string>;
+  trackingNumber: string | null;
+  carrierName: string | null;
   createdAt: string;
   items: OrderItem[];
   statusHistory: StatusHistory[];
@@ -83,7 +86,9 @@ async function getUserOrders(token: string): Promise<Order[]> {
 
 export default async function AccountOrdersPage() {
   const session = await requireAuth();
-  const token = (session as { apiAccessToken?: string }).apiAccessToken ?? '';
+  const sessionTyped = session as { apiAccessToken?: string; user?: { email?: string | null } };
+  const token = sessionTyped.apiAccessToken ?? '';
+  const customerEmail = sessionTyped.user?.email ?? '';
   const orders = await getUserOrders(token);
 
   return (
@@ -147,12 +152,35 @@ export default async function AccountOrdersPage() {
                     {formatCurrency(order.total, order.currency)}
                   </p>
                 </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${STATUS_COLORS[order.status]}`}
-                >
-                  {STATUS_LABELS[order.status]}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${STATUS_COLORS[order.status]}`}
+                  >
+                    {STATUS_LABELS[order.status]}
+                  </span>
+                  {order.status === 'DELIVERED' && (
+                    <ReturnRequestModal
+                      orderNumber={order.orderNumber}
+                      customerEmail={customerEmail}
+                    />
+                  )}
+                </div>
               </div>
+
+              {/* Tracking info */}
+              {(order.trackingNumber || order.carrierName) && (
+                <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-purple-50 px-5 py-2.5 text-sm">
+                  <span className="font-medium text-purple-800">
+                    {order.carrierName ?? 'Carrier'}
+                  </span>
+                  {order.trackingNumber && (
+                    <>
+                      <span className="text-purple-400">·</span>
+                      <span className="font-mono text-xs text-purple-700">{order.trackingNumber}</span>
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Items */}
               <ul className="divide-y divide-[var(--color-border)]">

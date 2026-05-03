@@ -251,10 +251,52 @@ Plan de trabajo completo para llevar Slicing Edge desde su estado actual hasta d
 
 ---
 
+## Post-Roadmap — Mejoras de Gestión de Envíos y Devoluciones
+
+Implementadas tras completar el roadmap original, basadas en buenas prácticas de e-commerce medianos.
+
+### Shipment tracking en órdenes
+- [x] Añadir campos `trackingNumber` y `carrierName` al modelo `Order`
+- [x] Admin puede ingresar número de guía y transportista al cambiar estado a `SHIPPED`
+- [x] El número de guía y transportista se muestran en la vista de detalle de orden del cliente
+- [x] Migración aplicada: `20260503025204_add_shipping_tracking_rma_states`
+
+### Flujo RMA completo (Return Merchandise Authorization)
+- [x] Expandir `ReturnStatus` enum de 4 a 7 estados: `PENDING → APPROVED/REJECTED → LABEL_ISSUED → RECEIVED → REFUNDED → CLOSED`
+- [x] Actualizar `ReturnService.updateStatus` para manejar todos los estados del flujo
+- [x] La verificación de "return activo" incluye los estados `LABEL_ISSUED` y `RECEIVED` (no solo `PENDING`/`APPROVED`)
+
+### Refund automático vía Stripe
+- [x] Al transicionar a `REFUNDED`, el servicio llama `POST /v1/refunds` de la Stripe REST API usando el `stripePaymentIntentId` de la orden
+- [x] Si `STRIPE_SECRET_KEY` no está configurada, el sistema registra un warning en Pino y continúa (fail-safe)
+- [x] Si el refund de Stripe falla, la excepción llega al cliente con código 502 antes de actualizar la DB
+
+### Notificaciones por email en cambios de estado RMA
+- [x] Nuevo template `ReturnStatusEmail` en `packages/email` — mensaje y color adaptados a cada estado
+- [x] `ReturnService` envía email al cliente en cada transición visible (todas excepto `PENDING`)
+- [x] Envío fire-and-forget con captura de errores en Pino (no bloquea la respuesta HTTP)
+
+### Auditabilidad de cambios de estado de órdenes
+- [x] Añadir campo `changedByAdminId` al modelo `OrderStatusHistory`
+- [x] El controlador extrae el `sub` del JWT del admin y lo pasa al servicio en cada cambio de estado
+
+### UI customer — formulario de solicitud de devolución
+- [x] Botón "Request Return" visible en órdenes con estado `DELIVERED` en `/account/orders`
+- [x] Modal client-side con razón predefinida (select con 7 opciones) + descripción libre
+- [x] Llama a `POST /api/returns` directamente desde el browser con los datos de la sesión
+
+### UI admin — mejoras en gestión de órdenes y returns
+- [x] Al seleccionar `SHIPPED` en el dropdown de admin, aparecen inputs de tracking number y transportista
+- [x] Panel expandido de orden muestra guía y transportista cuando están disponibles
+- [x] Dropdown de returns con 7 estados y etiquetas legibles ("Label Issued", "Received", etc.)
+
+---
+
 ## Notas
 
 - **Días = días laborales de ~4-6 horas de trabajo enfocado**
 - **Prioridad**: Si hay limitaciones de tiempo, las semanas 1-2 + deploy (día 20-23) son el MVP funcional
 - **AI Chatbot** (días 13-14) puede posponerse si el tiempo es limitado
 - **Upstash Redis** (día 19) es opcional si el rate-limit básico de Fastify es suficiente
-- El plan asume que las API keys de Stripe, Resend, Cloudinary, Google OAuth y Groq están configuradas
+- El plan asume que las API keys de Stripe, Resend, Google OAuth y Groq están configuradas
+- Las imágenes de producto usan almacenamiento local (`apps/api/public/uploads/`) — sin dependencia de Cloudinary

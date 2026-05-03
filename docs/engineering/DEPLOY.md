@@ -62,10 +62,12 @@ DATABASE_URL="postgresql://..." npm run db:seed:prod
 | `RESEND_FROM_EMAIL` | ✅ | Verified sender, e.g. `noreply@slicing-edge.com` |
 | `UPSTASH_REDIS_REST_URL` | ⚡ | Upstash Redis REST URL (recommended for multi-instance) |
 | `UPSTASH_REDIS_REST_TOKEN` | ⚡ | Upstash Redis REST token |
-| `ANTHROPIC_API_KEY` | 🤖 | Required only if AI chatbot is enabled |
+| `GROQ_API_KEY` | 🤖 | Required only if AI chatbot is enabled |
 | `PORT` | — | Defaults to `3001`; Railway sets `PORT` automatically |
 | `NODE_ENV` | — | Set to `production` |
 | `LOG_LEVEL` | — | Recommended: `info` |
+
+> **Note on `STRIPE_SECRET_KEY`:** this key is used both for creating Checkout Sessions and for issuing automatic refunds when a return request transitions to `REFUNDED` status. Without it, refunds must be processed manually from the Stripe Dashboard.
 
 ### Stripe webhook endpoint
 
@@ -180,6 +182,10 @@ Key checks:
 - [ ] Guest cart → Stripe checkout → order created
 - [ ] Stripe webhook triggers order confirmation email
 - [ ] Admin login → dashboard metrics visible
+- [ ] Admin orders → change status to SHIPPED → tracking number + carrier inputs appear → save → shipping email sent
+- [ ] Customer `/account/orders` → DELIVERED order shows "Request Return" button → modal submits → confirmation shown
+- [ ] Admin returns → return request appears → status updated to APPROVED → customer email triggered
+- [ ] Admin returns → status updated to REFUNDED → Stripe refund issued (verify in Stripe Dashboard → Payments → Refunds)
 - [ ] AI chatbot responds
 
 ---
