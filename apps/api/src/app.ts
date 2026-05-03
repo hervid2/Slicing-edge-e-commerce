@@ -67,6 +67,9 @@ export async function buildApp({ overridePrisma }: BuildAppOptions = {}) {
       },
       // Allow Swagger UI to load its embedded assets in dev
       crossOriginEmbedderPolicy: process.env.NODE_ENV === 'production',
+      // Static uploads must be loadable cross-origin by the Vercel frontend.
+      // Helmet's default is same-origin which would block browser image requests.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
     });
 
     // ── CORS — multi-origin for production ─────────────────────────────────
