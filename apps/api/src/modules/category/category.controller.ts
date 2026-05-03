@@ -27,7 +27,21 @@ export async function categoryRoutes(app: FastifyInstance) {
       const categories = await app.prisma.category.findMany({
         where: { isActive: true },
         orderBy: { position: 'asc' },
-        include: { _count: { select: { products: true } } },
+        include: {
+          _count: { select: { products: true } },
+          products: {
+            where: { isActive: true },
+            take: 1,
+            orderBy: { createdAt: 'asc' },
+            select: {
+              images: {
+                take: 1,
+                orderBy: { position: 'asc' },
+                select: { url: true, altText: true },
+              },
+            },
+          },
+        },
       });
       return reply.send({ categories });
     },

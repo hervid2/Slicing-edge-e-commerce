@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 
 export const revalidate = 60;
@@ -12,6 +13,7 @@ interface CategoryData {
   description: string | null;
   imageUrl: string | null;
   _count: { products: number };
+  products: { images: { url: string; altText: string | null }[] }[];
 }
 
 async function getCategories(): Promise<CategoryData[]> {
@@ -50,7 +52,16 @@ export default async function CategoriesPage() {
             href={`/products?category=${cat.slug}`}
             className="group relative flex h-72 items-end overflow-hidden rounded-lg bg-[var(--color-primary-light)] p-6 transition-transform hover:scale-[1.02]"
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            {cat.products[0]?.images[0]?.url && (
+              <Image
+                src={cat.products[0].images[0].url}
+                alt={cat.products[0].images[0].altText ?? cat.name}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
             <div className="relative z-10">
               <h2 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-white">
                 {cat.name}
