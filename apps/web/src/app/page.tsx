@@ -65,20 +65,25 @@ export default async function Home() {
           Explore our curated selection of professional-grade kitchen knives.
         </p>
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredCategories.map((cat) => (
+          {featuredCategories.map((cat) => {
+            const imgUrl = cat.products[0]?.images[0]?.url;
+            const imgAlt = cat.products[0]?.images[0]?.altText ?? cat.name;
+            const isApiImage = imgUrl?.startsWith(API_URL) || imgUrl?.startsWith('/uploads');
+            return (
             <Link
               key={cat.id}
               href={`/products?category=${cat.slug}`}
               className="group relative flex h-64 items-end overflow-hidden rounded-lg bg-[var(--color-primary-light)] p-6 transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
               aria-label={`Shop ${cat.name} collection`}
             >
-              {cat.products[0]?.images[0]?.url && (
+              {imgUrl && (
                 <Image
-                  src={cat.products[0].images[0].url}
-                  alt={cat.products[0].images[0].altText ?? cat.name}
+                  src={imgUrl}
+                  alt={imgAlt}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  unoptimized={!isApiImage}
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
@@ -89,7 +94,8 @@ export default async function Home() {
                 <p className="mt-1 text-sm text-white/70">Shop collection</p>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
 

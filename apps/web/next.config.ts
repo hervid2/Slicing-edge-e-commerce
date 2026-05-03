@@ -61,6 +61,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   transpilePackages: ["@slicing-edge/shared", "@slicing-edge/db"],
   images: {
+    minimumCacheTTL: 60 * 60 * 24, // Cache optimized images for 24 hours
     remotePatterns: [
       {
         // API server (dev: localhost:3001, prod: Railway URL) — uploaded product images

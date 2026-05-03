@@ -2,11 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 import { Heart } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { formatPrice } from '@/lib/utils';
 import { useWishlist } from '@/components/providers/wishlist-provider';
 import { useToast } from '@/components/ui/toast';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface ProductCardProps {
   id: string;
@@ -19,6 +22,7 @@ interface ProductCardProps {
   categoryName?: string;
   avgRating: number;
   reviewCount: number;
+  priority?: boolean;
 }
 
 export function ProductCard({
@@ -32,13 +36,20 @@ export function ProductCard({
   categoryName,
   avgRating,
   reviewCount,
+  priority = false,
 }: ProductCardProps) {
   const { status } = useSession();
   const { wishlistedIds, toggle } = useWishlist();
   const { toast } = useToast();
+  const [imgError, setImgError] = useState(false);
   const hasDiscount = compareAtPrice && compareAtPrice > price;
   const isWishlisted = wishlistedIds.has(id);
   const isLoggedIn = status === 'authenticated';
+
+  // External CDN images (Pexels, Unsplash, etc.) are fetched directly by the
+  // browser to avoid rate-limiting from Vercel's image optimizer hitting CDN IPs.
+  const isApiImage = imageUrl?.startsWith(API_URL) || imageUrl?.startsWith('/uploads');
+  const unoptimized = !isApiImage;
 
   const handleWishlistToggle = async () => {
     await toggle(id);
@@ -55,13 +66,16 @@ export function ProductCard({
       <Link href={`/products/${slug}`} className="block" aria-label={name}>
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-[var(--color-background)]">
-          {imageUrl ? (
+          {imageUrl && !imgError ? (
             <Image
               src={imageUrl}
               alt={imageAlt || name}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              priority={priority}
+              unoptimized={unoptimized}
+              onError={() => setImgError(true)}
             />
           ) : (
             <div className="flex h-full items-center justify-center text-[var(--color-muted)]">

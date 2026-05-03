@@ -140,7 +140,7 @@ export default async function ProductsPage({
       {/* Product grid */}
       {products.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((product) => (
+          {products.map((product, index) => (
             <ProductCard
               key={product.id}
               id={product.id}
@@ -153,6 +153,7 @@ export default async function ProductsPage({
               categoryName={product.category.name}
               avgRating={product.avgRating}
               reviewCount={product.reviewCount}
+              priority={index < 4}
             />
           ))}
         </div>
