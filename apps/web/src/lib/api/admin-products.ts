@@ -18,7 +18,9 @@ async function request<T>(path: string, init: RequestInit) {
   }
 
   const headers = new Headers(init.headers);
-  headers.set('Content-Type', 'application/json');
+  if (init.body !== undefined && init.body !== null) {
+    headers.set('Content-Type', 'application/json');
+  }
   headers.set('Authorization', `Bearer ${token}`);
 
   const response = await fetch(`${API_URL}${path}`, {
