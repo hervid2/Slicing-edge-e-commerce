@@ -10,9 +10,16 @@ export default async function AdminProductsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
+      <Link
+        href="/admin"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-primary)]"
+      >
+        ← Admin Dashboard
+      </Link>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-[family-name:var(--font-heading)] text-3xl font-bold text-[var(--color-primary)]">
-          Admin • Products
+          <Link href="/admin" className="hover:underline">Admin</Link>
+          {' '}• Products
         </h1>
         <Link
           href="/admin/products/new"
