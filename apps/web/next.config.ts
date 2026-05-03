@@ -71,6 +71,13 @@ const nextConfig: NextConfig = {
         pathname: '/uploads/**',
       },
       {
+        // Railway production API — hardcoded so remotePatterns works even when
+        // NEXT_PUBLIC_API_URL is not available at Vercel build time.
+        protocol: "https",
+        hostname: "slicing-edgeapi-production.up.railway.app",
+        pathname: '/uploads/**',
+      },
+      {
         protocol: "https",
         hostname: "res.cloudinary.com",
         pathname: "/**",
