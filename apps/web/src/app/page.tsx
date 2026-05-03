@@ -1,12 +1,32 @@
 import Link from "next/link";
+import Image from "next/image";
 
-const CATEGORY_MAP: Record<string, string> = {
-  "Chef's Knives": "chef-knives",
-  "Santoku Knives": "santoku-knives",
-  "Paring Knives": "paring-knives",
-};
+export const revalidate = 60;
 
-export default function Home() {
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+interface HomeCategoryData {
+  id: string;
+  name: string;
+  slug: string;
+  products: { images: { url: string; altText: string | null }[] }[];
+}
+
+async function getFeaturedCategories(): Promise<HomeCategoryData[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/categories`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.categories ?? []).slice(0, 3);
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const featuredCategories = await getFeaturedCategories();
   return (
     <>
       {/* Hero Section */}
@@ -45,23 +65,31 @@ export default function Home() {
           Explore our curated selection of professional-grade kitchen knives.
         </p>
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {["Chef's Knives", "Santoku Knives", "Paring Knives"].map(
-            (category) => (
-              <Link
-                key={category}
-                href={`/products?category=${CATEGORY_MAP[category]}`}
-                className="group relative flex h-64 items-end overflow-hidden rounded-lg bg-[var(--color-primary-light)] p-6 transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
-                aria-label={`Shop ${category} collection`}
-              >
-                <div className="relative z-10">
-                  <h3 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-white">
-                    {category}
-                  </h3>
-                  <p className="mt-1 text-sm text-white/70">Shop collection</p>
-                </div>
-              </Link>
-            )
-          )}
+          {featuredCategories.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/products?category=${cat.slug}`}
+              className="group relative flex h-64 items-end overflow-hidden rounded-lg bg-[var(--color-primary-light)] p-6 transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
+              aria-label={`Shop ${cat.name} collection`}
+            >
+              {cat.products[0]?.images[0]?.url && (
+                <Image
+                  src={cat.products[0].images[0].url}
+                  alt={cat.products[0].images[0].altText ?? cat.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+              <div className="relative z-10">
+                <h3 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-white">
+                  {cat.name}
+                </h3>
+                <p className="mt-1 text-sm text-white/70">Shop collection</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 

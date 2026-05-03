@@ -5,12 +5,7 @@ import { useEffect, useState } from 'react';
 import { getSession, signOut } from 'next-auth/react';
 import { Logo } from '@/components/ui/logo';
 
-const shopLinks = [
-  { href: '/products', label: 'All Products' },
-  { href: '/categories/chef-knives', label: "Chef's Knives" },
-  { href: '/categories/santoku-knives', label: 'Santoku Knives' },
-  { href: '/categories/paring-knives', label: 'Paring Knives' },
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 const supportLinks = [
   { href: '/about', label: 'About Us' },
@@ -49,17 +44,31 @@ const adminStoreLinks = [
 
 const linkClass = 'text-sm text-white/70 transition-colors hover:text-white';
 
+interface CategoryLink {
+  slug: string;
+  name: string;
+}
+
 export function Footer() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [categories, setCategories] = useState<CategoryLink[]>([]);
 
   useEffect(() => {
     let active = true;
-    void getSession().then((session) => {
+
+    void Promise.all([
+      getSession(),
+      fetch(`${API_URL}/api/categories`).then((r) => r.ok ? r.json() : { categories: [] }).catch(() => ({ categories: [] })),
+    ]).then(([session, data]) => {
       if (!active) return;
       setIsLoggedIn(!!session?.user);
       setIsAdmin((session?.user as { role?: string })?.role === 'ADMIN');
+      setCategories(
+        (data.categories as { slug: string; name: string }[]) ?? [],
+      );
     });
+
     return () => {
       active = false;
     };
@@ -158,10 +167,15 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider">Shop</h3>
             <ul className="mt-4 space-y-3">
-              {shopLinks.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className={linkClass}>
-                    {link.label}
+              <li>
+                <Link href="/products" className={linkClass}>
+                  All Products
+                </Link>
+              </li>
+              {categories.map((cat) => (
+                <li key={cat.slug}>
+                  <Link href={`/products?category=${cat.slug}`} className={linkClass}>
+                    {cat.name}
                   </Link>
                 </li>
               ))}
