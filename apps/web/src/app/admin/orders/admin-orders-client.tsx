@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   listAdminOrders,
   updateAdminOrderStatus,
+  createAdminReturn,
   type AdminOrder,
   type OrderStatus,
 } from '@/lib/api/admin-orders';
@@ -136,16 +137,173 @@ function StatusSelect({ orderId, current, currentTracking, onUpdated }: StatusSe
   );
 }
 
+// ── Admin-initiated return form ───────────────────────────────────────────────
+
+const RETURN_REASONS = [
+  'Admin-initiated return',
+  'Defective or damaged item',
+  'Wrong item shipped',
+  'Item not as described',
+  'Customer request (phone/email)',
+  'Undelivered — returned to sender',
+  'Other',
+] as const;
+
+interface InitiateReturnFormProps {
+  orderId: string;
+  orderNumber: string;
+  activeReturn: { id: string; status: string } | null;
+  onCreated: (orderId: string, returnId: string, status: string) => void;
+}
+
+function InitiateReturnForm({ orderId, orderNumber, activeReturn, onCreated }: InitiateReturnFormProps) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState(RETURN_REASONS[0]);
+  const [description, setDescription] = useState('');
+  const [adminNote, setAdminNote] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  if (activeReturn) {
+    return (
+      <div className="mt-3 flex items-center gap-2 rounded-md border border-[var(--color-border)] bg-amber-50 px-3 py-2 text-xs">
+        <span className="font-semibold text-amber-700">Return in progress:</span>
+        <span className="rounded-full bg-amber-100 px-2 py-0.5 font-mono text-amber-800">
+          {activeReturn.status}
+        </span>
+        <a
+          href="/admin/returns"
+          className="ml-auto text-[var(--color-accent)] hover:underline focus-visible:outline-none"
+        >
+          Manage →
+        </a>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="mt-3 rounded-md bg-green-50 px-3 py-2 text-xs text-green-700">
+        Return request created for order <strong>#{orderNumber}</strong>.{' '}
+        <a href="/admin/returns" className="underline">
+          Go to Returns →
+        </a>
+      </div>
+    );
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (description.trim().length < 10) {
+      setError('Description must be at least 10 characters.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const res = await createAdminReturn(orderId, {
+        reason,
+        description: description.trim(),
+        adminNote: adminNote.trim() || undefined,
+      });
+      onCreated(orderId, res.returnRequest.id, res.returnRequest.status);
+      setSuccess(true);
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create return.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-3 border-t border-[var(--color-border)] pt-3">
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="inline-flex h-7 items-center gap-1.5 rounded border border-dashed border-[var(--color-border)] px-3 text-xs font-medium text-[var(--color-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+        >
+          + Initiate Return
+        </button>
+      ) : (
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
+          <p className="text-xs font-semibold text-[var(--color-foreground)]">Initiate Return</p>
+
+          <select
+            value={reason}
+            onChange={(e) => setReason(e.target.value as typeof reason)}
+            disabled={loading}
+            aria-label="Return reason"
+            className="w-full rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-50"
+          >
+            {RETURN_REASONS.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe the reason for this return (min. 10 chars)…"
+            disabled={loading}
+            rows={2}
+            minLength={10}
+            maxLength={2000}
+            required
+            aria-label="Return description"
+            className="w-full resize-none rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-50"
+          />
+
+          <input
+            type="text"
+            value={adminNote}
+            onChange={(e) => setAdminNote(e.target.value)}
+            placeholder="Internal admin note (optional)"
+            disabled={loading}
+            maxLength={1000}
+            aria-label="Admin note"
+            className="w-full rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-50"
+          />
+
+          {error && <p className="text-xs text-red-600">{error}</p>}
+
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex h-7 items-center rounded bg-[var(--color-accent)] px-3 text-xs font-semibold text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+            >
+              {loading ? 'Creating…' : 'Create Return'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setOpen(false); setError(''); }}
+              disabled={loading}
+              className="inline-flex h-7 items-center rounded border border-[var(--color-border)] px-3 text-xs text-[var(--color-muted)] hover:text-[var(--color-foreground)] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
 interface OrderRowProps {
   order: AdminOrder;
   isExpanded: boolean;
   onToggle: () => void;
   onStatusUpdated: (orderId: string, status: OrderStatus, tracking?: { trackingNumber: string; carrierName: string }) => void;
+  onReturnCreated: (orderId: string, returnId: string, status: string) => void;
 }
 
-function OrderRow({ order, isExpanded, onToggle, onStatusUpdated }: OrderRowProps) {
+function OrderRow({ order, isExpanded, onToggle, onStatusUpdated, onReturnCreated }: OrderRowProps) {
   const customerLabel = order.user?.name ?? order.user?.email ?? order.guestEmail ?? '—';
   const address = order.shippingAddress as Record<string, string>;
+  const activeReturn = order.returnRequests?.[0] ?? null;
 
   return (
     <>
@@ -269,6 +427,13 @@ function OrderRow({ order, isExpanded, onToggle, onStatusUpdated }: OrderRowProp
                     )}
                   </div>
                 )}
+
+                <InitiateReturnForm
+                  orderId={order.id}
+                  orderNumber={order.orderNumber}
+                  activeReturn={activeReturn}
+                  onCreated={onReturnCreated}
+                />
               </div>
 
               {/* Status timeline */}
@@ -342,6 +507,16 @@ export function AdminOrdersClient() {
     );
   }
 
+  function handleReturnCreated(orderId: string, returnId: string, status: string) {
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId
+          ? { ...o, returnRequests: [{ id: returnId, status }] }
+          : o,
+      ),
+    );
+  }
+
   function toggleExpand(id: string) {
     setExpandedId((prev) => (prev === id ? null : id));
   }
@@ -387,6 +562,7 @@ export function AdminOrdersClient() {
               isExpanded={expandedId === order.id}
               onToggle={() => toggleExpand(order.id)}
               onStatusUpdated={handleStatusUpdated}
+              onReturnCreated={handleReturnCreated}
             />
           ))}
         </tbody>

@@ -71,6 +71,13 @@ export class OrderService {
         include: {
           items: true,
           user: { select: { name: true, email: true } },
+          // Include the most recent active return so admin UI can show its status
+          // and hide the "Initiate Return" button when one already exists.
+          returnRequests: {
+            where: { status: { in: ['PENDING', 'APPROVED', 'LABEL_ISSUED', 'RECEIVED'] } },
+            select: { id: true, status: true },
+            take: 1,
+          },
         },
       }),
       this.prisma.order.count(),

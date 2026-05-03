@@ -290,6 +290,15 @@ Implementadas tras completar el roadmap original, basadas en buenas prácticas d
 - [x] Panel expandido de orden muestra guía y transportista cuando están disponibles
 - [x] Dropdown de returns con 7 estados y etiquetas legibles ("Label Issued", "Received", etc.)
 
+### Inicio de return por el administrador
+- [x] Nuevo endpoint `POST /api/admin/orders/:orderId/return` — bypassea la verificación de email del cliente
+- [x] `ReturnService.createReturnByAdmin()` toma el email del cliente directamente del registro de la orden
+- [x] `getAllOrders` incluye el return activo de cada orden (`returnRequests` filtrado a estados no cerrados)
+- [x] Panel expandido de cada orden en admin muestra el formulario "Initiate Return" cuando no hay return activo
+- [x] Si ya existe un return activo, el panel muestra su estado actual y un enlace directo a la sección Returns
+- [x] Formulario inline: razón predefinida (7 opciones incluyendo "Admin-initiated") + descripción + nota interna opcional
+- [x] Al crear el return, el estado local de la orden se actualiza sin necesidad de recargar la página
+
 ---
 
 ## Notas

@@ -74,6 +74,56 @@ export class ReturnService {
   }
 
   /**
+   * Creates a return request on behalf of the customer, initiated by an admin.
+   * Bypasses email ownership verification — the admin has full order access.
+   * The customer email is taken directly from the order record.
+   *
+   * @throws {AppError} 404 if order not found.
+   * @throws {AppError} 409 if an active return already exists for this order.
+   */
+  async createReturnByAdmin(data: {
+    orderId: string;
+    reason: string;
+    description: string;
+    adminNote?: string;
+  }) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: data.orderId },
+      select: {
+        id: true,
+        orderNumber: true,
+        guestEmail: true,
+        user: { select: { name: true, email: true } },
+      },
+    });
+
+    if (!order) throw new AppError('Order not found.', 404);
+
+    const existing = await this.prisma.returnRequest.findFirst({
+      where: {
+        orderId: order.id,
+        status: { in: ['PENDING', 'APPROVED', 'LABEL_ISSUED', 'RECEIVED'] },
+      },
+    });
+    if (existing) {
+      throw new AppError('An active return request already exists for this order.', 409);
+    }
+
+    const customerEmail = order.guestEmail ?? order.user?.email ?? '';
+
+    return this.prisma.returnRequest.create({
+      data: {
+        orderId: order.id,
+        email: customerEmail,
+        reason: data.reason,
+        description: data.description,
+        ...(data.adminNote ? { adminNote: data.adminNote } : {}),
+      },
+      include: { order: { select: { orderNumber: true } } },
+    });
+  }
+
+  /**
    * Returns a paginated list of return requests for the admin panel.
    * Supports filtering by status.
    */

@@ -32,6 +32,8 @@ El modelo `Order` tiene un `OrderStatus` enum con 5 estados (PENDING → PROCESS
 ### Flujo RMA (devoluciones)
 `ReturnRequest` tiene 7 estados: `PENDING → APPROVED/REJECTED → LABEL_ISSUED → RECEIVED → REFUNDED → CLOSED`. La transición a `REFUNDED` llama automáticamente a `POST /v1/refunds` de la Stripe REST API (sin SDK — usando fetch con `STRIPE_SECRET_KEY`). Cada transición visible dispara un email transaccional al cliente vía Resend.
 
+El flujo puede iniciarse por dos vías: (1) el cliente envía el formulario en `/account/orders` (requiere orden en estado DELIVERED), o (2) el admin lo inicia desde el panel de órdenes vía `POST /api/admin/orders/:id/return`, que omite la verificación de email y toma el contacto del cliente directamente del registro de la orden. Esta segunda vía cubre casos como retornos solicitados por teléfono, paquetes devueltos sin solicitud previa, o errores de despacho detectados por el equipo interno.
+
 ### Sin integración con APIs de transportistas
 Los estados de envío los gestiona manualmente el admin. No hay webhooks entrantes de carriers. Esta decisión es apropiada para el volumen actual; cuando el negocio escale, se puede integrar un agregador (AfterShip, EasyPost) reemplazando el campo `trackingNumber` por una entidad `Shipment` con eventos propios.
 

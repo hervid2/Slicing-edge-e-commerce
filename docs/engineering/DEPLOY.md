@@ -185,6 +185,8 @@ Key checks:
 - [ ] Admin orders → change status to SHIPPED → tracking number + carrier inputs appear → save → shipping email sent
 - [ ] Customer `/account/orders` → DELIVERED order shows "Request Return" button → modal submits → confirmation shown
 - [ ] Admin returns → return request appears → status updated to APPROVED → customer email triggered
+- [ ] Admin orders → expand any order → "Initiate Return" form appears (if no active return) → submit → return appears in Admin Returns
+- [ ] Admin orders → expand order with active return → shows return status badge + "Manage →" link instead of form
 - [ ] Admin returns → status updated to REFUNDED → Stripe refund issued (verify in Stripe Dashboard → Payments → Refunds)
 - [ ] AI chatbot responds
 

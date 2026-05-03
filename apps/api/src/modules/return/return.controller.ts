@@ -10,6 +10,12 @@ const createReturnSchema = z.object({
   description: z.string().min(10).max(2000),
 });
 
+const createReturnByAdminSchema = z.object({
+  reason: z.string().min(1).max(120),
+  description: z.string().min(10).max(2000),
+  adminNote: z.string().max(1000).optional(),
+});
+
 const ALL_RETURN_STATUSES = [
   'PENDING',
   'APPROVED',
@@ -56,6 +62,46 @@ export async function returnRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const data = createReturnSchema.parse(request.body);
       const returnRequest = await service.createReturn(data);
+      return reply.status(201).send({ returnRequest });
+    },
+  );
+
+  // Admin: initiate a return for any order (bypasses customer email verification)
+  app.post<{ Params: { orderId: string } }>(
+    '/admin/orders/:orderId/return',
+    {
+      preHandler: [authenticate, requireAdmin],
+      schema: {
+        tags: ['Admin', 'Returns'],
+        summary: 'Initiate a return for an order (admin)',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['orderId'],
+          properties: { orderId: { type: 'string' } },
+        },
+        body: {
+          type: 'object',
+          required: ['reason', 'description'],
+          properties: {
+            reason: { type: 'string' },
+            description: { type: 'string' },
+            adminNote: { type: 'string' },
+          },
+        },
+        response: {
+          201: { type: 'object', additionalProperties: true },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { reason, description, adminNote } = createReturnByAdminSchema.parse(request.body);
+      const returnRequest = await service.createReturnByAdmin({
+        orderId: request.params.orderId,
+        reason,
+        description,
+        adminNote,
+      });
       return reply.status(201).send({ returnRequest });
     },
   );

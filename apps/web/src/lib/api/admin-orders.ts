@@ -33,6 +33,8 @@ export interface AdminOrder {
   user: { name: string | null; email: string } | null;
   items: AdminOrderItem[];
   statusHistory: AdminOrderStatusHistory[];
+  /** Active return request (PENDING/APPROVED/LABEL_ISSUED/RECEIVED), if any. */
+  returnRequests: { id: string; status: string }[];
   createdAt: string;
 }
 
@@ -78,6 +80,20 @@ export async function listAdminOrders(page = 1, limit = 20) {
   return request<{ orders: AdminOrder[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
     `/api/admin/orders?page=${page}&limit=${limit}`,
     { method: 'GET' },
+  );
+}
+
+/**
+ * Creates a return request for an order, initiated by an admin.
+ * Bypasses customer email verification — admin has full order access.
+ */
+export async function createAdminReturn(
+  orderId: string,
+  data: { reason: string; description: string; adminNote?: string },
+) {
+  return request<{ returnRequest: { id: string; status: string; order: { orderNumber: string } } }>(
+    `/api/admin/orders/${orderId}/return`,
+    { method: 'POST', body: JSON.stringify(data) },
   );
 }
 
