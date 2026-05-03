@@ -338,6 +338,120 @@ async function main() {
   console.log(`  ✅ ${products.length} products created`);
   console.log(`  ✅ ${products.length} primary product images upserted`);
 
+  // ──── FAQ Entries ────
+  const faqCount = await prisma.faqEntry.count();
+  if (faqCount === 0) {
+    await prisma.faqEntry.createMany({
+      data: [
+        // Shipping & Delivery
+        {
+          question: 'What are your shipping options and costs?',
+          answer:
+            'We offer standard shipping at a flat rate of $9.99. Orders over $75 qualify for free standard shipping. Expedited shipping is available at checkout for an additional fee.',
+          position: 1,
+          isActive: true,
+        },
+        {
+          question: 'How long does delivery take?',
+          answer:
+            'Standard shipping takes 5–7 business days from the date your order ships. You will receive a shipping confirmation email with a tracking number once your order is on its way.',
+          position: 2,
+          isActive: true,
+        },
+        {
+          question: 'Can I track my order?',
+          answer:
+            'Yes. As soon as your order ships, we will send you a confirmation email with a tracking number and carrier name. You can also check your tracking information at any time on our Order Tracking page.',
+          position: 3,
+          isActive: true,
+        },
+        {
+          question: 'Do you ship internationally?',
+          answer:
+            'At this time we only ship within the national territory. We are working to expand our shipping destinations — subscribe to our newsletter to be notified when international shipping becomes available.',
+          position: 4,
+          isActive: true,
+        },
+        // Returns & Warranty
+        {
+          question: 'What is your return policy?',
+          answer:
+            'We accept returns within 30 days of delivery, provided the item is unused and in its original packaging. To start a return, go to My Account → Order History and click "Request Return" on the relevant order.',
+          position: 5,
+          isActive: true,
+        },
+        {
+          question: 'What if my knife arrived damaged?',
+          answer:
+            'We are sorry to hear that! Please contact us within 7 days of delivery with photos of the damage. We will arrange a replacement or full refund at no extra cost to you.',
+          position: 6,
+          isActive: true,
+        },
+        {
+          question: 'Do your knives come with a warranty?',
+          answer:
+            'All Slicing Edge knives carry a lifetime warranty against manufacturing defects. Normal wear, improper use, or damage caused by dishwashers is not covered. Contact our support team to start a warranty claim.',
+          position: 7,
+          isActive: true,
+        },
+        // Products & Care
+        {
+          question: 'What type of steel are your knives made from?',
+          answer:
+            'Depending on the model, our knives are crafted from German stainless steel (1.4116), Japanese VG-10 steel, or high-carbon steel. The exact steel type is listed in each product description so you can choose the blade that best suits your cooking style.',
+          position: 8,
+          isActive: true,
+        },
+        {
+          question: 'How do I care for and maintain my knife?',
+          answer:
+            'Always hand-wash and dry your knife immediately after use — dishwashers damage the edge and handle over time. Sharpen regularly with a honing rod or whetstone suited to the steel type, and store on a magnetic strip or in a knife block to protect the blade.',
+          position: 9,
+          isActive: true,
+        },
+        {
+          question: "What is the difference between a Chef's Knife and a Santoku?",
+          answer:
+            "A Chef's Knife (20–25 cm) features a curved blade ideal for the rocking motion used in Western-style chopping. A Santoku (16–18 cm) has a shorter, flatter edge that excels at precision slicing of vegetables, fish, and boneless meats. Both are all-purpose knives — choose based on your grip preference and dominant cutting technique.",
+          position: 10,
+          isActive: true,
+        },
+        {
+          question: 'How do I know which knife size is right for me?',
+          answer:
+            'The right knife size depends on your hand size and cutting style. As a general rule: if you have larger hands or cook large volumes, a 20–25 cm Chef\'s Knife gives you more control. For smaller hands or more delicate work, an 18 cm Santoku or a 16 cm utility knife is easier to maneuver. When in doubt, start with a 20 cm Chef\'s Knife — it is the most versatile option for everyday cooking.',
+          position: 11,
+          isActive: true,
+        },
+        // Account & Payment
+        {
+          question: 'What payment methods do you accept?',
+          answer:
+            'We accept Visa, Mastercard, American Express, and debit cards through our secure Stripe Checkout. We do not store your card details on our servers.',
+          position: 12,
+          isActive: true,
+        },
+        {
+          question: 'Can I place an order without creating an account?',
+          answer:
+            'Absolutely. You can check out as a guest using only your email address. Your order confirmation and tracking information will be sent to that email. Creating an account unlocks order history, wishlist, and a faster checkout experience for future visits.',
+          position: 13,
+          isActive: true,
+        },
+        {
+          question: 'How do I change or cancel my order?',
+          answer:
+            'Orders can be cancelled within 2 hours of being placed directly from the Order Tracking page. After that window, if the order has already shipped, you will need to initiate a return once the package arrives.',
+          position: 14,
+          isActive: true,
+        },
+      ],
+    });
+    console.log('  ✅ 14 FAQ entries created');
+  } else {
+    console.log(`  ⏭️  FAQ entries already exist (${faqCount}), skipping`);
+  }
+
   // ──── Customer Address ────
   await prisma.address.upsert({
     where: { id: 'seed-address-1' },
