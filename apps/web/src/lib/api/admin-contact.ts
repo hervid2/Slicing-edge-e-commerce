@@ -61,6 +61,16 @@ export async function markMessageRead(id: string) {
 }
 
 /**
+ * Sends an email reply to the customer who submitted the contact message.
+ */
+export async function replyToMessage(id: string, reply: string) {
+  return request<{ replied: boolean }>(`/api/admin/contact/${id}/reply`, {
+    method: 'POST',
+    body: JSON.stringify({ reply }),
+  });
+}
+
+/**
  * Permanently deletes a contact message.
  */
 export async function deleteMessage(id: string) {

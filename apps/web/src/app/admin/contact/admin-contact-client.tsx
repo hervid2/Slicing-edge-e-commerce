@@ -5,6 +5,7 @@ import {
   listAdminMessages,
   markMessageRead,
   deleteMessage,
+  replyToMessage,
   type ContactMessage,
 } from '@/lib/api/admin-contact';
 
@@ -23,6 +24,9 @@ interface MessageModalProps {
 
 function MessageModal({ msg, onClose, onDeleted, onRead }: MessageModalProps) {
   const [deleting, setDeleting] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [sending, setSending] = useState(false);
+  const [replySent, setReplySent] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -31,6 +35,22 @@ function MessageModal({ msg, onClose, onDeleted, onRead }: MessageModalProps) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [msg.id]);
+
+  async function handleReply() {
+    if (!replyText.trim()) return;
+    setError('');
+    setSending(true);
+    try {
+      await replyToMessage(msg.id, replyText.trim());
+      setReplySent(true);
+      setReplyText('');
+      onRead(msg.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send reply');
+    } finally {
+      setSending(false);
+    }
+  }
 
   async function handleDelete() {
     setError('');
@@ -66,13 +86,37 @@ function MessageModal({ msg, onClose, onDeleted, onRead }: MessageModalProps) {
           {msg.message}
         </p>
 
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {/* Reply section */}
+        <div className="mt-5">
+          <label
+            htmlFor="reply-textarea"
+            className="mb-1.5 block text-sm font-semibold text-[var(--color-foreground)]"
+          >
+            Reply to {msg.name}
+          </label>
+          <textarea
+            id="reply-textarea"
+            value={replyText}
+            onChange={(e) => { setReplySent(false); setReplyText(e.target.value); }}
+            disabled={sending}
+            rows={4}
+            placeholder={`Write your reply to ${msg.email}…`}
+            className="w-full resize-y rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] disabled:opacity-50"
+          />
+          {replySent && (
+            <p className="mt-1.5 text-sm font-medium text-[var(--color-accent)]">
+              Reply sent successfully.
+            </p>
+          )}
+        </div>
 
-        <div className="mt-5 flex justify-end gap-3">
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+
+        <div className="mt-4 flex flex-wrap justify-end gap-3">
           <button
             type="button"
             onClick={() => void handleDelete()}
-            disabled={deleting}
+            disabled={deleting || sending}
             className="inline-flex h-10 items-center rounded-md bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-40"
           >
             {deleting ? 'Deleting…' : 'Delete'}
@@ -83,6 +127,14 @@ function MessageModal({ msg, onClose, onDeleted, onRead }: MessageModalProps) {
             className="inline-flex h-10 items-center rounded-md border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-background)]"
           >
             Close
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleReply()}
+            disabled={sending || !replyText.trim()}
+            className="inline-flex h-10 items-center rounded-md bg-[var(--color-accent)] px-4 text-sm font-semibold text-white hover:bg-[var(--color-primary-light)] disabled:opacity-40"
+          >
+            {sending ? 'Sending…' : 'Send Reply'}
           </button>
         </div>
       </div>

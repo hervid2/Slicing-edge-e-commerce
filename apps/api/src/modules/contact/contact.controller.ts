@@ -101,6 +101,37 @@ export async function contactRoutes(app: FastifyInstance) {
     },
   );
 
+  // Admin: reply to message (sends email to customer)
+  app.post<{ Params: { id: string }; Body: { reply: string } }>(
+    '/admin/contact/:id/reply',
+    {
+      preHandler: [authenticate, requireAdmin],
+      schema: {
+        tags: ['Admin', 'Contact'],
+        summary: 'Reply to a contact message via email (admin)',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'string' } },
+        },
+        body: {
+          type: 'object',
+          required: ['reply'],
+          properties: { reply: { type: 'string', minLength: 1 } },
+        },
+        response: {
+          200: { type: 'object', properties: { replied: { type: 'boolean' } } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { reply: replyText } = request.body as { reply: string };
+      const result = await service.replyToMessage(request.params.id, replyText);
+      return reply.send(result);
+    },
+  );
+
   // Admin: delete message
   app.delete<{ Params: { id: string } }>(
     '/admin/contact/:id',

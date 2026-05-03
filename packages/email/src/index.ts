@@ -38,3 +38,4 @@ export { OrderShippedEmail } from './templates/order-shipped';
 export { PasswordResetEmail } from './templates/password-reset';
 export { AdminInviteEmail } from './templates/admin-invite';
 export { ReturnStatusEmail } from './templates/return-status';
+export { ContactReplyEmail } from './templates/contact-reply';

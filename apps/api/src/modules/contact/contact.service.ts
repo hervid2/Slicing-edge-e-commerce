@@ -1,4 +1,6 @@
 import type { PrismaClient } from '@slicing-edge/db';
+import { sendEmail, ContactReplyEmail } from '@slicing-edge/email';
+import * as React from 'react';
 import { AppError } from '../../middleware/error-handler';
 
 /**
@@ -52,6 +54,32 @@ export class ContactService {
     const existing = await this.prisma.contactMessage.findUnique({ where: { id } });
     if (!existing) throw new AppError('Message not found.', 404);
     return this.prisma.contactMessage.update({ where: { id }, data: { isRead: true } });
+  }
+
+  /**
+   * Sends an email reply to the customer who submitted the contact message.
+   * Marks the message as read after sending.
+   *
+   * @throws {AppError} 404 if message not found.
+   */
+  async replyToMessage(id: string, replyText: string) {
+    const msg = await this.prisma.contactMessage.findUnique({ where: { id } });
+    if (!msg) throw new AppError('Message not found.', 404);
+
+    await sendEmail({
+      to: msg.email,
+      subject: `Re: ${msg.subject}`,
+      react: React.createElement(ContactReplyEmail, {
+        customerName: msg.name,
+        originalSubject: msg.subject,
+        originalMessage: msg.message,
+        replyText,
+      }),
+    });
+
+    await this.prisma.contactMessage.update({ where: { id }, data: { isRead: true } });
+
+    return { replied: true };
   }
 
   /**
