@@ -71,6 +71,7 @@ export class OrderService {
         include: {
           items: true,
           user: { select: { name: true, email: true } },
+          statusHistory: { orderBy: { createdAt: 'asc' }, select: { id: true, status: true, note: true, createdAt: true } },
           // Include the most recent active return so admin UI can show its status
           // and hide the "Initiate Return" button when one already exists.
           returnRequests: {
