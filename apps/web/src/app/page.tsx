@@ -68,7 +68,6 @@ export default async function Home() {
           {featuredCategories.map((cat) => {
             const imgUrl = cat.products[0]?.images[0]?.url;
             const imgAlt = cat.products[0]?.images[0]?.altText ?? cat.name;
-            const isApiImage = imgUrl?.startsWith(API_URL) || imgUrl?.startsWith('/uploads');
             return (
             <Link
               key={cat.id}
@@ -83,7 +82,7 @@ export default async function Home() {
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  unoptimized={!isApiImage}
+                  unoptimized
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />

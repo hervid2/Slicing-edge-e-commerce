@@ -185,6 +185,7 @@ export default async function ProductDetailPage({
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
+                unoptimized
               />
             ) : (
               <div className="flex h-full items-center justify-center text-[var(--color-muted)]">
@@ -198,7 +199,7 @@ export default async function ProductDetailPage({
             <div className="grid grid-cols-4 gap-2">
               {product.images.slice(0, 4).map((img) => (
                 <div key={img.id} className="relative aspect-square overflow-hidden rounded-md bg-[var(--color-background)]">
-                  <Image src={img.url} alt={img.altText || ''} fill className="object-cover" sizes="120px" />
+                  <Image src={img.url} alt={img.altText || ''} fill className="object-cover" sizes="120px" unoptimized />
                 </div>
               ))}
             </div>

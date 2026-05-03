@@ -9,7 +9,6 @@ import { formatPrice } from '@/lib/utils';
 import { useWishlist } from '@/components/providers/wishlist-provider';
 import { useToast } from '@/components/ui/toast';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface ProductCardProps {
   id: string;
@@ -46,10 +45,10 @@ export function ProductCard({
   const isWishlisted = wishlistedIds.has(id);
   const isLoggedIn = status === 'authenticated';
 
-  // External CDN images (Pexels, Unsplash, etc.) are fetched directly by the
-  // browser to avoid rate-limiting from Vercel's image optimizer hitting CDN IPs.
-  const isApiImage = imageUrl?.startsWith(API_URL) || imageUrl?.startsWith('/uploads');
-  const unoptimized = !isApiImage;
+  // All product images are fetched directly by the browser. The Next.js optimizer
+  // is skipped because remotePatterns is evaluated at Vercel build time and may
+  // not include the Railway hostname, causing 404s from the optimizer proxy.
+  const unoptimized = true;
 
   const handleWishlistToggle = async () => {
     await toggle(id);
