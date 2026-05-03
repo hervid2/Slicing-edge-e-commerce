@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@slicing-edge/db';
 import { AppError } from '../../middleware/error-handler';
-import { SHIPPING_FLAT_RATE, FREE_SHIPPING_THRESHOLD, ORDER_NUMBER_PREFIX } from '@slicing-edge/shared';
+import { SHIPPING_FLAT_RATE, FREE_SHIPPING_THRESHOLD, ORDER_NUMBER_PREFIX, CANCEL_WINDOW_MS } from '@slicing-edge/shared';
 import { sendEmail, OrderShippedEmail } from '@slicing-edge/email';
 import crypto from 'node:crypto';
 
@@ -163,6 +163,60 @@ export class OrderService {
         }
       }
     }
+
+    return updatedOrder;
+  }
+
+  /**
+   * Cancels an order on behalf of a customer.
+   * Validates email ownership, the 2-hour cancellation window, and that the
+   * order has not already shipped, been delivered, or been cancelled.
+   *
+   * @throws {AppError} 404 — order not found or email mismatch.
+   * @throws {AppError} 409 — order is no longer cancellable.
+   */
+  async cancelOrder(orderNumber: string, email: string) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        orderNumber,
+        OR: [{ guestEmail: email }, { user: { email } }],
+      },
+    });
+
+    if (!order) throw new AppError('Order not found', 404);
+
+    const NON_CANCELLABLE: string[] = ['SHIPPED', 'DELIVERED', 'CANCELLED'];
+    if (NON_CANCELLABLE.includes(order.status)) {
+      throw new AppError(
+        order.status === 'CANCELLED'
+          ? 'This order is already cancelled.'
+          : 'This order can no longer be cancelled because it has already shipped.',
+        409,
+      );
+    }
+
+    const ageMs = Date.now() - new Date(order.createdAt).getTime();
+    if (ageMs > CANCEL_WINDOW_MS) {
+      throw new AppError(
+        'The 2-hour cancellation window has passed. Please initiate a return instead.',
+        409,
+      );
+    }
+
+    const [updatedOrder] = await this.prisma.$transaction([
+      this.prisma.order.update({
+        where: { id: order.id },
+        data: { status: 'CANCELLED' },
+        include: { items: true, statusHistory: { orderBy: { createdAt: 'desc' } } },
+      }),
+      this.prisma.orderStatusHistory.create({
+        data: {
+          orderId: order.id,
+          status: 'CANCELLED',
+          note: 'Cancelled by customer within the 2-hour window.',
+        },
+      }),
+    ]);
 
     return updatedOrder;
   }

@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { guestOrderTrackingSchema, updateOrderStatusSchema } from '@slicing-edge/shared';
+import { guestOrderTrackingSchema, updateOrderStatusSchema, cancelOrderSchema } from '@slicing-edge/shared';
 import { OrderService } from './order.service';
 import { authenticate, requireAdmin } from '../../middleware/auth';
 
@@ -62,6 +62,39 @@ export async function orderRoutes(app: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { orderNumber, email } = guestOrderTrackingSchema.parse(request.body);
       const order = await orderService.getOrderByNumber(orderNumber, email);
+      return reply.send({ order });
+    },
+  );
+
+  app.post(
+    '/orders/cancel',
+    {
+      schema: {
+        tags: ['Orders'],
+        summary: 'Cancel an order (customer)',
+        description:
+          'Allows a customer to cancel their own order within the 2-hour cancellation window. Requires order number and the email used at checkout.',
+        body: {
+          type: 'object',
+          required: ['orderNumber', 'email'],
+          properties: {
+            orderNumber: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              order: { type: 'object', additionalProperties: true },
+            },
+          },
+        },
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { orderNumber, email } = cancelOrderSchema.parse(request.body);
+      const order = await orderService.cancelOrder(orderNumber, email);
       return reply.send({ order });
     },
   );

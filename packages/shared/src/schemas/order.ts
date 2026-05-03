@@ -28,6 +28,14 @@ export const updateOrderStatusSchema = z.object({
   carrierName: z.string().max(80).optional(),
 });
 
+export const cancelOrderSchema = z.object({
+  orderNumber: z.string().min(1, 'Order number is required'),
+  email: z.string().email('Invalid email address'),
+});
+
+export const CANCEL_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours
+
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export type GuestOrderTrackingInput = z.infer<typeof guestOrderTrackingSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
+export type CancelOrderInput = z.infer<typeof cancelOrderSchema>;

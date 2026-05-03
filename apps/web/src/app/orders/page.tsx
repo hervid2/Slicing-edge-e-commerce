@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const CANCEL_WINDOW_MS = 2 * 60 * 60 * 1000;
 
 type OrderStatus = 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
 
@@ -36,6 +37,37 @@ function statusIcon(status: OrderStatus) {
   }
 }
 
+function useCancelOrder(order: TrackedOrder | null, email: string) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState('');
+  const [timeLeft, setTimeLeft] = useState('');
+
+  const isCancellable =
+    order !== null &&
+    (order.status === 'PENDING' || order.status === 'PROCESSING') &&
+    Date.now() - new Date(order.createdAt).getTime() < CANCEL_WINDOW_MS;
+
+  useEffect(() => {
+    if (!order || !isCancellable) { setTimeLeft(''); return; }
+
+    function update() {
+      if (!order) return;
+      const remaining = CANCEL_WINDOW_MS - (Date.now() - new Date(order.createdAt).getTime());
+      if (remaining <= 0) { setTimeLeft(''); return; }
+      const m = Math.floor(remaining / 60000);
+      const s = Math.floor((remaining % 60000) / 1000);
+      setTimeLeft(`${m}m ${s.toString().padStart(2, '0')}s`);
+    }
+
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [order, isCancellable]);
+
+  return { isCancellable, confirmOpen, setConfirmOpen, cancelling, setCancelling, cancelError, setCancelError, timeLeft };
+}
+
 export default function OrdersPage() {
   const { status: sessionStatus } = useSession();
   const searchParams = useSearchParams();
@@ -51,6 +83,9 @@ export default function OrdersPage() {
     Boolean(initialOrderNumber && initialEmail),
   );
   const autoTracked = useRef(false);
+
+  const { isCancellable, confirmOpen, setConfirmOpen, cancelling, setCancelling, cancelError, setCancelError, timeLeft } =
+    useCancelOrder(order, email);
 
   const trackOrder = useCallback(async (trackingOrderNumber: string, trackingEmail: string) => {
     setError('');
@@ -95,6 +130,27 @@ export default function OrdersPage() {
     e.preventDefault();
     setShowOrderCreatedNotice(false);
     await trackOrder(orderNumber, email);
+  }
+
+  async function onCancelConfirm() {
+    if (!order) return;
+    setCancelling(true);
+    setCancelError('');
+    try {
+      const res = await fetch(`${API_URL}/api/orders/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderNumber: order.orderNumber, email }),
+      });
+      const data = await res.json().catch(() => ({})) as { order?: TrackedOrder; message?: string };
+      if (!res.ok) throw new Error(data.message ?? 'Could not cancel the order.');
+      setOrder(data.order ?? null);
+      setConfirmOpen(false);
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      setCancelling(false);
+    }
   }
 
   return (
@@ -154,10 +210,66 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 text-sm text-[var(--color-muted)]">
-            <Calendar className="h-4 w-4" />
-            {new Date(order.createdAt).toLocaleString()}
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <span className="flex items-center gap-2 text-sm text-[var(--color-muted)]">
+              <Calendar className="h-4 w-4" />
+              {new Date(order.createdAt).toLocaleString()}
+            </span>
+
+            {isCancellable && (
+              <button
+                type="button"
+                onClick={() => { setConfirmOpen(true); setCancelError(''); }}
+                className="inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              >
+                <XCircle className="h-4 w-4" />
+                Cancel order
+                {timeLeft && (
+                  <span className="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-xs font-mono text-red-700">
+                    {timeLeft}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
+
+          {/* Inline confirmation dialog */}
+          {confirmOpen && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cancel-dialog-title"
+              className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4"
+            >
+              <p id="cancel-dialog-title" className="font-semibold text-red-800">
+                Cancel order {order.orderNumber}?
+              </p>
+              <p className="mt-1 text-sm text-red-700">
+                This cannot be undone. You will need to place a new order if you change your mind.
+              </p>
+              {cancelError && (
+                <p role="alert" className="mt-2 text-sm font-medium text-red-800">{cancelError}</p>
+              )}
+              <div className="mt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => void onCancelConfirm()}
+                  disabled={cancelling}
+                  className="inline-flex h-9 items-center rounded-md bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                >
+                  {cancelling ? 'Cancelling…' : 'Yes, cancel order'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmOpen(false)}
+                  disabled={cancelling}
+                  className="inline-flex h-9 items-center rounded-md border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-background)] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                >
+                  Keep order
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="mt-6">
             <h2 className="font-semibold text-[var(--color-primary)]">Items</h2>
