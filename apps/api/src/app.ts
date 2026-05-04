@@ -1,9 +1,7 @@
-import path from 'node:path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import multipart from '@fastify/multipart';
-import staticFiles from '@fastify/static';
 import rawBody from 'fastify-raw-body';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
@@ -109,17 +107,6 @@ export async function buildApp({ overridePrisma }: BuildAppOptions = {}) {
   }
 
   await app.register(multipart);
-
-  await app.register(staticFiles, {
-    root: path.join(process.cwd(), 'public', 'uploads'),
-    prefix: '/uploads/',
-    decorateReply: false,
-    setHeaders(res) {
-      // Allow cross-origin image loading from the Vercel frontend
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-      res.setHeader('Access-Control-Allow-Origin', '*');
-    },
-  });
 
   await app.register(rawBody, {
     field: 'rawBody',

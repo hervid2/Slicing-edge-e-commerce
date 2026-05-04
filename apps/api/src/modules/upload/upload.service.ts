@@ -1,14 +1,18 @@
 import path from 'node:path';
-import fs from 'node:fs/promises';
-import crypto from 'node:crypto';
+import { v2 as cloudinary } from 'cloudinary';
 import { AppError } from '../../middleware/error-handler';
 
-const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif']);
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export class UploadService {
   /**
-   * Saves an uploaded image buffer to the local uploads directory and returns its public URL.
+   * Uploads an image buffer to Cloudinary and returns the secure URL and public ID.
    */
   async saveFile(buffer: Buffer, originalName: string, folder = 'products') {
     const ext = path.extname(originalName).toLowerCase() || '.jpg';
@@ -17,15 +21,31 @@ export class UploadService {
       throw new AppError('Unsupported image format. Allowed: jpg, jpeg, png, webp, gif, avif', 400);
     }
 
-    const dir = path.join(UPLOADS_DIR, folder);
-    await fs.mkdir(dir, { recursive: true });
+    if (
+      !process.env.CLOUDINARY_CLOUD_NAME ||
+      !process.env.CLOUDINARY_API_KEY ||
+      !process.env.CLOUDINARY_API_SECRET
+    ) {
+      throw new AppError('Image storage is not configured. Set CLOUDINARY_* environment variables.', 503);
+    }
 
-    const filename = `${crypto.randomUUID()}${ext}`;
-    await fs.writeFile(path.join(dir, filename), buffer);
+    const result = await new Promise<{ secure_url: string; public_id: string }>(
+      (resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream({ folder, resource_type: 'image' }, (error, res) => {
+            if (error || !res) {
+              reject(error ?? new Error('Cloudinary upload returned no result'));
+            } else {
+              resolve(res);
+            }
+          })
+          .end(buffer);
+      },
+    );
 
     return {
-      url: `/uploads/${folder}/${filename}`,
-      publicId: `${folder}/${filename}`,
+      url: result.secure_url,
+      publicId: result.public_id,
     };
   }
 }
