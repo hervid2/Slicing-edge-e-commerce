@@ -21,21 +21,21 @@ This folder contains project-facing engineering standards intended for collabora
 - Shows consistency in architecture and code quality standards.
 - Makes AI-assisted collaboration explicit and auditable.
 
-## Decisiones de arquitectura relevantes
+## Relevant architecture decisions
 
-### Gestión de imágenes de producto
-Las imágenes se almacenan en el sistema de archivos local de la API (`apps/api/public/uploads/products/`) y se sirven como archivos estáticos vía `@fastify/static`. No se usa ningún CDN externo. En Railway, montar un Volume en `/app/public/uploads` preserva las imágenes entre deploys.
+### Product image management
+Images are stored on the API's local filesystem (`apps/api/public/uploads/products/`) and served as static files via `@fastify/static`. No external CDN is used. On Railway, mounting a Volume at `/app/public/uploads` preserves images across deploys.
 
-### Flujo de órdenes y estados de envío
-El modelo `Order` tiene un `OrderStatus` enum con 5 estados (PENDING → PROCESSING → SHIPPED → DELIVERED → CANCELLED). La trazabilidad se implementa en `OrderStatusHistory`, una tabla append-only que registra cada transición, la nota del admin, y el `changedByAdminId` para auditabilidad. El campo `trackingNumber`/`carrierName` se persiste en la orden cuando el admin cambia el estado a SHIPPED.
+### Order flow and shipping states
+The `Order` model has an `OrderStatus` enum with 5 states (PENDING → PROCESSING → SHIPPED → DELIVERED → CANCELLED). Traceability is implemented in `OrderStatusHistory`, an append-only table that records each transition, the admin's note, and `changedByAdminId` for auditability. The `trackingNumber`/`carrierName` fields are persisted on the order when the admin changes the status to SHIPPED.
 
-### Flujo RMA (devoluciones)
-`ReturnRequest` tiene 7 estados: `PENDING → APPROVED/REJECTED → LABEL_ISSUED → RECEIVED → REFUNDED → CLOSED`. La transición a `REFUNDED` llama automáticamente a `POST /v1/refunds` de la Stripe REST API (sin SDK — usando fetch con `STRIPE_SECRET_KEY`). Cada transición visible dispara un email transaccional al cliente vía Resend.
+### RMA flow (returns)
+`ReturnRequest` has 7 states: `PENDING → APPROVED/REJECTED → LABEL_ISSUED → RECEIVED → REFUNDED → CLOSED`. The transition to `REFUNDED` automatically calls `POST /v1/refunds` on the Stripe REST API (no SDK — uses fetch with `STRIPE_SECRET_KEY`). Every visible transition triggers a transactional email to the customer via Resend.
 
-El flujo puede iniciarse por dos vías: (1) el cliente envía el formulario en `/account/orders` (requiere orden en estado DELIVERED), o (2) el admin lo inicia desde el panel de órdenes vía `POST /api/admin/orders/:id/return`, que omite la verificación de email y toma el contacto del cliente directamente del registro de la orden. Esta segunda vía cubre casos como retornos solicitados por teléfono, paquetes devueltos sin solicitud previa, o errores de despacho detectados por el equipo interno.
+The flow can be started two ways: (1) the customer submits the form at `/account/orders` (requires the order to be in DELIVERED status), or (2) the admin starts it from the orders panel via `POST /api/admin/orders/:id/return`, which skips the email verification and takes the customer's contact info directly from the order record. This second path covers cases like returns requested by phone, packages returned without a prior request, or dispatch errors caught by the internal team.
 
-### Sin integración con APIs de transportistas
-Los estados de envío los gestiona manualmente el admin. No hay webhooks entrantes de carriers. Esta decisión es apropiada para el volumen actual; cuando el negocio escale, se puede integrar un agregador (AfterShip, EasyPost) reemplazando el campo `trackingNumber` por una entidad `Shipment` con eventos propios.
+### No carrier API integration
+Shipping states are managed manually by the admin. There are no inbound carrier webhooks. This decision is appropriate for the current volume; when the business scales, an aggregator (AfterShip, EasyPost) can be integrated by replacing the `trackingNumber` field with a `Shipment` entity that has its own events.
 
 ## Notes
 
