@@ -9,7 +9,7 @@ interface AnimatedCounterProps {
   className?: string;
 }
 
-/** Counts up from 0 to `value` once it scrolls into view; skips the animation under prefers-reduced-motion. */
+/** Counts up from 0 to `value` every time it scrolls into view; skips the animation under prefers-reduced-motion. */
 export function AnimatedCounter({
   value,
   format = (v) => String(Math.round(v)),
@@ -17,11 +17,17 @@ export function AnimatedCounter({
 }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const motionValue = useMotionValue(0);
-  const isInView = useInView(ref, { once: true, amount: 0.5 });
+  const isInView = useInView(ref, { once: false, amount: 0.5 });
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
-    if (!isInView || !ref.current) return;
+    if (!ref.current) return;
+
+    if (!isInView) {
+      if (!prefersReducedMotion) motionValue.set(0);
+      ref.current.textContent = format(0);
+      return;
+    }
 
     if (prefersReducedMotion) {
       ref.current.textContent = format(value);
