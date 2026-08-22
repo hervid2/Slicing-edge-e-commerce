@@ -10,14 +10,14 @@ interface RevealProps {
   delay?: number;
 }
 
-/** Fades + translates a single block into view once, on scroll. */
+/** Fades + translates a single block into view on scroll, replaying every time it re-enters the viewport. */
 export function Reveal({ children, className, delay = 0 }: RevealProps) {
   return (
     <motion.div
       className={className}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: false, amount: 0.2 }}
       variants={fadeUpVariants}
       transition={{ delay }}
     >
@@ -31,14 +31,14 @@ interface RevealStaggerProps {
   className?: string;
 }
 
-/** Wraps each direct child in a staggered fade-up reveal — callers pass plain JSX (e.g. a `.map()` of cards). */
+/** Wraps each direct child in a staggered fade-up reveal, replaying every time it re-enters the viewport — callers pass plain JSX (e.g. a `.map()` of cards). */
 export function RevealStagger({ children, className }: RevealStaggerProps) {
   return (
     <motion.div
       className={className}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
+      viewport={{ once: false, amount: 0.1 }}
       variants={staggerContainerVariants}
     >
       {Children.toArray(children).map((child, i) => (
