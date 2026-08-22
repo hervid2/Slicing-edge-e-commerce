@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { getSession } from 'next-auth/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { ChatPanel } from './chat-panel';
+import { modalBackdropVariants, modalPanelVariants } from '@/lib/motion-variants';
 
 /**
  * Floating chat widget fixed at the bottom-right corner.
@@ -31,29 +33,41 @@ export function ChatWidget() {
   return (
     <>
       {/* Chat panel — desktop: floating card; mobile: full-screen overlay */}
-      {open && (
-        <>
-          {/* Mobile backdrop */}
-          <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm sm:hidden"
-            onClick={() => setOpen(false)}
-            aria-hidden="true"
-          />
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* Mobile backdrop */}
+            <motion.div
+              key="chat-backdrop"
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm sm:hidden"
+              variants={modalBackdropVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              onClick={() => setOpen(false)}
+              aria-hidden="true"
+            />
 
-          {/* Panel */}
-          <div
-            className={cn(
-              'fixed z-50',
-              // Mobile: fill the screen
-              'inset-x-4 bottom-20 top-4',
-              // sm+: floating card at bottom-right
-              'sm:inset-auto sm:bottom-24 sm:right-6 sm:h-[560px] sm:w-96',
-            )}
-          >
-            <ChatPanel onClose={() => setOpen(false)} />
-          </div>
-        </>
-      )}
+            {/* Panel */}
+            <motion.div
+              key="chat-panel"
+              variants={modalPanelVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className={cn(
+                'fixed z-50',
+                // Mobile: fill the screen
+                'inset-x-4 bottom-20 top-4',
+                // sm+: floating card at bottom-right
+                'sm:inset-auto sm:bottom-24 sm:right-6 sm:h-[560px] sm:w-96',
+              )}
+            >
+              <ChatPanel onClose={() => setOpen(false)} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* FAB */}
       <button

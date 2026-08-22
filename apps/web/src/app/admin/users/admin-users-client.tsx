@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { MotionModal } from '@/components/ui/motion-modal';
 import {
   listAdminUsers,
   updateUserRole,
@@ -108,23 +110,17 @@ function InviteModal({ onClose, onInvited }: InviteModalProps) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="invite-modal-title"
-    >
-      <div className="w-full max-w-md rounded-xl bg-[var(--color-surface)] p-6 shadow-xl">
-        <h2
-          id="invite-modal-title"
-          className="mb-4 font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)]"
-        >
-          Invite New Admin
-        </h2>
-        <p className="mb-4 text-sm text-[var(--color-muted)]">
-          Enter the email address of the person you want to invite as an administrator. They will
-          receive an email with a link to set up their password.
-        </p>
+    <MotionModal onClose={onClose} ariaLabelledBy="invite-modal-title" className="max-w-md p-6">
+      <h2
+        id="invite-modal-title"
+        className="mb-4 font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)]"
+      >
+        Invite New Admin
+      </h2>
+      <p className="mb-4 text-sm text-[var(--color-muted)]">
+        Enter the email address of the person you want to invite as an administrator. They will
+        receive an email with a link to set up their password.
+      </p>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           <div>
@@ -171,8 +167,7 @@ function InviteModal({ onClose, onInvited }: InviteModalProps) {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </MotionModal>
   );
 }
 
@@ -202,49 +197,42 @@ function DeleteConfirm({ user, onClose, onDeleted }: DeleteConfirmProps) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="delete-modal-title"
-    >
-      <div className="w-full max-w-sm rounded-xl bg-[var(--color-surface)] p-6 shadow-xl">
-        <h2
-          id="delete-modal-title"
-          className="mb-2 font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)]"
+    <MotionModal onClose={onClose} ariaLabelledBy="delete-modal-title" className="max-w-sm p-6">
+      <h2
+        id="delete-modal-title"
+        className="mb-2 font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)]"
+      >
+        Delete Account
+      </h2>
+      <p className="mb-4 text-sm text-[var(--color-muted)]">
+        Are you sure you want to permanently delete{' '}
+        <strong className="text-[var(--color-foreground)]">
+          {user.name ?? user.email}
+        </strong>
+        ? This action cannot be undone.
+      </p>
+
+      {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+
+      <div className="flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={loading}
+          className="inline-flex h-10 items-center rounded-md border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-background)] disabled:opacity-40"
         >
-          Delete Account
-        </h2>
-        <p className="mb-4 text-sm text-[var(--color-muted)]">
-          Are you sure you want to permanently delete{' '}
-          <strong className="text-[var(--color-foreground)]">
-            {user.name ?? user.email}
-          </strong>
-          ? This action cannot be undone.
-        </p>
-
-        {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
-
-        <div className="flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="inline-flex h-10 items-center rounded-md border border-[var(--color-border)] px-4 text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-background)] disabled:opacity-40"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleDelete()}
-            disabled={loading}
-            className="inline-flex h-10 items-center rounded-md bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-40"
-          >
-            {loading ? 'Deleting…' : 'Delete'}
-          </button>
-        </div>
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={() => void handleDelete()}
+          disabled={loading}
+          className="inline-flex h-10 items-center rounded-md bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-40"
+        >
+          {loading ? 'Deleting…' : 'Delete'}
+        </button>
       </div>
-    </div>
+    </MotionModal>
   );
 }
 
@@ -470,16 +458,19 @@ export function AdminUsersClient() {
       )}
 
       {/* Modals */}
-      {showInvite && (
-        <InviteModal onClose={() => setShowInvite(false)} onInvited={handleInvited} />
-      )}
-      {deletingUser && (
-        <DeleteConfirm
-          user={deletingUser}
-          onClose={() => setDeletingUser(null)}
-          onDeleted={handleDeleted}
-        />
-      )}
+      <AnimatePresence>
+        {showInvite && (
+          <InviteModal key="invite" onClose={() => setShowInvite(false)} onInvited={handleInvited} />
+        )}
+        {deletingUser && (
+          <DeleteConfirm
+            key="delete"
+            user={deletingUser}
+            onClose={() => setDeletingUser(null)}
+            onDeleted={handleDeleted}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

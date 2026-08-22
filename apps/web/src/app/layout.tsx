@@ -3,6 +3,8 @@ import { Playfair_Display, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Header, Footer } from "@/components/layout";
+import { MotionRoot } from "@/components/motion/motion-root";
+import { PageTransition } from "@/components/motion/page-transition";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { WishlistProvider } from "@/components/providers/wishlist-provider";
 import { CartSyncProvider } from "@/components/providers/cart-sync-provider";
@@ -64,18 +66,22 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <AuthSessionProvider>
-          <ToastProvider>
-            <WishlistProvider>
-              <CartSyncProvider>
-                <Header />
-                <main id="main-content" className="flex-1">{children}</main>
-                <Footer />
-                <ChatWidget />
-              </CartSyncProvider>
-            </WishlistProvider>
-          </ToastProvider>
-        </AuthSessionProvider>
+        <MotionRoot>
+          <AuthSessionProvider>
+            <ToastProvider>
+              <WishlistProvider>
+                <CartSyncProvider>
+                  <Header />
+                  <main id="main-content" className="flex-1">
+                    <PageTransition>{children}</PageTransition>
+                  </main>
+                  <Footer />
+                  <ChatWidget />
+                </CartSyncProvider>
+              </WishlistProvider>
+            </ToastProvider>
+          </AuthSessionProvider>
+        </MotionRoot>
         {/* Vercel Analytics — tracks page views and custom events */}
         <Analytics />
         {/* Vercel Speed Insights — collects Core Web Vitals data */}

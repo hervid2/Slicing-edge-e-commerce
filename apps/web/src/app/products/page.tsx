@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ProductCard } from '@/components/product/product-card';
+import { RevealStagger } from '@/components/motion/reveal';
 
 /** Must be dynamic — page reads searchParams for filtering/search/pagination */
 export const dynamic = 'force-dynamic';
@@ -139,7 +140,7 @@ export default async function ProductsPage({
 
       {/* Product grid */}
       {products.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <RevealStagger className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product, index) => (
             <ProductCard
               key={product.id}
@@ -156,7 +157,7 @@ export default async function ProductsPage({
               priority={index < 4}
             />
           ))}
-        </div>
+        </RevealStagger>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <p className="text-lg font-medium text-[var(--color-primary)]">No products found</p>

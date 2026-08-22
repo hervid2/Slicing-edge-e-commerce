@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { MotionModal } from '@/components/ui/motion-modal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -36,15 +37,6 @@ export function SearchModal({ onClose }: SearchModalProps) {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
-
-  // Close on Escape
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
 
   // Debounced search
   useEffect(() => {
@@ -97,22 +89,13 @@ export function SearchModal({ onClose }: SearchModalProps) {
   }
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Modal panel */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Search products"
-        className="fixed left-1/2 top-20 z-50 w-full max-w-xl -translate-x-1/2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-2xl"
-      >
-        {/* Input */}
+    <MotionModal
+      onClose={onClose}
+      ariaLabel="Search products"
+      overlayClassName="items-start justify-center pt-20 backdrop-blur-sm"
+      className="max-w-xl overflow-hidden border border-[var(--color-border)] shadow-2xl"
+    >
+      {/* Input */}
         <form onSubmit={handleSubmit} className="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
           {loading ? (
             <Loader2 className="h-5 w-5 shrink-0 animate-spin text-[var(--color-muted)]" />
@@ -210,7 +193,6 @@ export function SearchModal({ onClose }: SearchModalProps) {
             Type to search products…
           </p>
         )}
-      </div>
-    </>
+    </MotionModal>
   );
 }

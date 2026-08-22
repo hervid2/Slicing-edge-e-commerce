@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Heart, Trash2 } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import { useWishlist } from '@/components/providers/wishlist-provider';
+import { RevealStagger } from '@/components/motion/reveal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -136,7 +137,7 @@ export default function WishlistPage() {
       )}
 
       {!loading && items.length > 0 && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <RevealStagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map(({ id, productId, product }) => {
             const hasDiscount =
               product.compareAtPrice && Number(product.compareAtPrice) > Number(product.price);
@@ -205,7 +206,7 @@ export default function WishlistPage() {
               </div>
             );
           })}
-        </div>
+        </RevealStagger>
       )}
     </div>
   );

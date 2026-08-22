@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Reveal, RevealStagger } from "@/components/motion/reveal";
 
 export const revalidate = 60;
 
@@ -31,7 +32,7 @@ export default async function Home() {
     <>
       {/* Hero Section */}
       <section className="relative flex min-h-[80vh] items-center justify-center bg-[var(--color-primary)] px-4 text-white">
-        <div className="mx-auto max-w-6xl text-center">
+        <Reveal className="mx-auto max-w-6xl text-center">
           <h1 className="font-[family-name:var(--font-heading)] text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
             The Art of the Cut
           </h1>
@@ -53,7 +54,7 @@ export default async function Home() {
               Browse Collections
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Featured Categories */}
@@ -64,7 +65,7 @@ export default async function Home() {
         <p className="mx-auto mt-4 max-w-xl text-center text-[var(--color-muted)]">
           Explore our curated selection of professional-grade kitchen knives.
         </p>
-        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <RevealStagger className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {featuredCategories.map((cat) => {
             const imgUrl = cat.products[0]?.images[0]?.url;
             const imgAlt = cat.products[0]?.images[0]?.altText ?? cat.name;
@@ -95,13 +96,13 @@ export default async function Home() {
             </Link>
             );
           })}
-        </div>
+        </RevealStagger>
       </section>
 
       {/* Value Propositions */}
       <section className="bg-[var(--color-surface)] px-4 py-16 sm:py-24">
         <div className="mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <RevealStagger className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { title: "Free Shipping", desc: "On orders over $75" },
               { title: "Handcrafted", desc: "Premium materials" },
@@ -120,7 +121,7 @@ export default async function Home() {
                 </p>
               </div>
             ))}
-          </div>
+          </RevealStagger>
         </div>
       </section>
     </>

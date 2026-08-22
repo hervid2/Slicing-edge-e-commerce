@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, LayoutDashboard, ShoppingBag, Package, Users, RotateCcw, MessageSquare, HelpCircle, UserCircle, TrendingUp, AlertTriangle, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MotionModal } from '@/components/ui/motion-modal';
 
 const adminRoutes = [
   { href: '/admin', label: 'Dashboard', description: 'KPIs, revenue, recent activity', icon: LayoutDashboard },
@@ -32,14 +33,6 @@ export function AdminSearchModal({ onClose }: AdminSearchModalProps) {
     inputRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [onClose]);
-
   const filtered = query.trim()
     ? adminRoutes.filter(
         (r) =>
@@ -54,18 +47,13 @@ export function AdminSearchModal({ onClose }: AdminSearchModalProps) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm pt-16 px-4"
-      onClick={onClose}
-      aria-modal="true"
-      role="dialog"
-      aria-label="Admin quick search"
+    <MotionModal
+      onClose={onClose}
+      ariaLabel="Admin quick search"
+      overlayClassName="items-start justify-center pt-16 px-4 bg-black/50 backdrop-blur-sm"
+      className="max-w-lg overflow-hidden shadow-2xl"
     >
-      <div
-        className="w-full max-w-lg rounded-xl bg-[var(--color-surface)] shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Input */}
+      {/* Input */}
         <div className="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
           <Search className="h-5 w-5 shrink-0 text-[var(--color-muted)]" aria-hidden="true" />
           <input
@@ -119,7 +107,6 @@ export function AdminSearchModal({ onClose }: AdminSearchModalProps) {
             })
           )}
         </ul>
-      </div>
-    </div>
+    </MotionModal>
   );
 }

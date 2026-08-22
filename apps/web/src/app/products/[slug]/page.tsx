@@ -10,6 +10,7 @@ export const revalidate = 60;
 import { AddToCartActions } from '@/components/product/add-to-cart-actions';
 import { ReviewSection } from '@/components/product/review-section';
 import { WishlistButton } from '@/components/product/wishlist-button';
+import { Reveal } from '@/components/motion/reveal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -175,7 +176,7 @@ export default async function ProductDetailPage({
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
         {/* Image gallery */}
-        <div className="space-y-4">
+        <Reveal className="space-y-4">
           <div className="relative aspect-square overflow-hidden rounded-lg bg-[var(--color-background)]">
             {product.images[0] ? (
               <Image
@@ -204,10 +205,10 @@ export default async function ProductDetailPage({
               ))}
             </div>
           )}
-        </div>
+        </Reveal>
 
         {/* Product info */}
-        <div>
+        <Reveal delay={0.1}>
           <p className="mb-2 text-sm font-medium uppercase tracking-wider text-[var(--color-muted)]">
             {product.category.name}
           </p>
@@ -289,7 +290,7 @@ export default async function ProductDetailPage({
               <span>Lifetime warranty included</span>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       {/* Reviews section */}

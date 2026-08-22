@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { RevealStagger } from '@/components/motion/reveal';
 
 interface FaqEntry {
   id: string;
@@ -19,7 +20,7 @@ export function FaqAccordion({ entries }: FaqAccordionProps) {
   const sorted = [...entries].sort((a, b) => a.position - b.position);
 
   return (
-    <div className="divide-y divide-[var(--color-border)] rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
+    <RevealStagger className="divide-y divide-[var(--color-border)] rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
       {sorted.map((entry) => {
         const isOpen = openId === entry.id;
         return (
@@ -59,6 +60,6 @@ export function FaqAccordion({ entries }: FaqAccordionProps) {
           </div>
         );
       })}
-    </div>
+    </RevealStagger>
   );
 }
