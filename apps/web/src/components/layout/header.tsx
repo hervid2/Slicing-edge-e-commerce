@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Menu, X, Heart, User, Search } from 'lucide-react';
+import { AnimatePresence } from 'motion/react';
 import { getSession, signOut } from 'next-auth/react';
 import { MobileNav } from './mobile-nav';
 import { CartButton } from './cart-button';
@@ -162,8 +163,14 @@ export function Header() {
       />
 
       {/* Search / Admin quicknav modal */}
-      {isSearchOpen && isAdmin && <AdminSearchModal onClose={() => setIsSearchOpen(false)} />}
-      {isSearchOpen && !isAdmin && <SearchModal onClose={() => setIsSearchOpen(false)} />}
+      <AnimatePresence>
+        {isSearchOpen && isAdmin && (
+          <AdminSearchModal key="admin-search" onClose={() => setIsSearchOpen(false)} />
+        )}
+        {isSearchOpen && !isAdmin && (
+          <SearchModal key="search" onClose={() => setIsSearchOpen(false)} />
+        )}
+      </AnimatePresence>
     </header>
   );
 }

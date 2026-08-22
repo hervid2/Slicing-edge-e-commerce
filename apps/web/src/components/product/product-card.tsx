@@ -3,11 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { Heart } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useSession } from 'next-auth/react';
 import { formatPrice } from '@/lib/utils';
 import { useWishlist } from '@/components/providers/wishlist-provider';
 import { useToast } from '@/components/ui/toast';
+import { AnimatedHeart } from '@/components/motion/animated-heart';
+import { SPRING } from '@/lib/motion-variants';
 
 
 interface ProductCardProps {
@@ -60,7 +62,11 @@ export function ProductCard({
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] transition-all duration-300 hover:shadow-lg hover:border-[var(--color-accent)]/30 hover:-translate-y-0.5">
+    <motion.div
+      className="group relative overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] transition-colors duration-300 hover:shadow-lg hover:border-[var(--color-accent)]/30"
+      whileHover={{ y: -4 }}
+      transition={SPRING}
+    >
       {/* Product link covers the whole card */}
       <Link href={`/products/${slug}`} className="block" aria-label={name}>
         {/* Image */}
@@ -138,17 +144,16 @@ export function ProductCard({
 
       {/* Wishlist button — outside the Link to avoid nested interactive elements */}
       {isLoggedIn && (
-        <button
+        <motion.button
           type="button"
           onClick={() => void handleWishlistToggle()}
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          whileTap={{ scale: 0.85 }}
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 shadow backdrop-blur-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
         >
-          <Heart
-            className={`h-5 w-5 transition-colors ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-[var(--color-muted)]'}`}
-          />
-        </button>
+          <AnimatedHeart filled={isWishlisted} />
+        </motion.button>
       )}
-    </div>
+    </motion.div>
   );
 }
