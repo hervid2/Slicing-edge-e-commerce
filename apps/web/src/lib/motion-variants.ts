@@ -27,15 +27,6 @@ export const fadeUpVariants: Variants = {
   },
 };
 
-export const staggerContainerVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
-};
-
 /** Route-level enter/exit transition. */
 export const pageVariants: Variants = {
   initial: { opacity: 0, y: 8 },
