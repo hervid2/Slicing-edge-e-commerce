@@ -63,7 +63,7 @@ export function ProductCard({
 
   return (
     <motion.div
-      className="group relative overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] transition-colors duration-300 hover:shadow-lg hover:border-[var(--color-accent)]/30"
+      className="group relative h-full overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] transition-colors duration-300 hover:shadow-lg hover:border-[var(--color-accent)]/30"
       whileHover={{ y: -4 }}
       transition={SPRING}
     >
