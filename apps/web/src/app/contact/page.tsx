@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ContactForm } from './contact-form';
+import { Reveal, RevealStagger } from '@/components/motion/reveal';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
@@ -18,11 +19,11 @@ export default function ContactPage() {
         will get back to you within 1–2 business days.
       </p>
 
-      <div className="mt-10 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-8">
+      <Reveal className="mt-10 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-8">
         <ContactForm />
-      </div>
+      </Reveal>
 
-      <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
         {[
           {
             icon: (
@@ -81,7 +82,7 @@ export default function ContactPage() {
             <p className="text-sm font-medium text-[var(--color-foreground)]">{item.value}</p>
           </div>
         ))}
-      </div>
+      </RevealStagger>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { RevealStagger } from '@/components/motion/reveal';
 
 export const metadata: Metadata = {
   title: 'Shipping & Returns — Slicing Edge',
@@ -56,7 +57,9 @@ const sections = [
             >
               Order History
             </Link>
-            , and click <strong>Request Return</strong> next to the delivered order. Select a reason, add a description, and submit. Our team will review your request and respond within 2 business days.
+            , and click <strong>Request Return</strong> next to the delivered order. Select a
+            reason, add a description, and submit. Our team will review your request and respond
+            within 2 business days.
           </>
         ),
       },
@@ -85,7 +88,8 @@ const sections = [
             >
               contact us
             </Link>{' '}
-            within 7 days of delivery. Include your order number and photos of the damage so we can resolve the issue as quickly as possible.
+            within 7 days of delivery. Include your order number and photos of the damage so we can
+            resolve the issue as quickly as possible.
           </>
         ),
       },
@@ -100,11 +104,11 @@ export default function ShippingReturnsPage() {
         Shipping &amp; Returns
       </h1>
       <p className="mt-4 text-lg text-[var(--color-muted)]">
-        Everything you need to know about how we ship your order and how to
-        return it if something isn&apos;t right.
+        Everything you need to know about how we ship your order and how to return it if something
+        isn&apos;t right.
       </p>
 
-      <div className="mt-12 space-y-12">
+      <RevealStagger className="mt-12 space-y-12">
         {sections.map((section) => (
           <section key={section.id} aria-labelledby={`section-${section.id}`}>
             <h2
@@ -120,9 +124,7 @@ export default function ShippingReturnsPage() {
                   key={item.heading}
                   className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4"
                 >
-                  <dt className="font-semibold text-[var(--color-foreground)]">
-                    {item.heading}
-                  </dt>
+                  <dt className="font-semibold text-[var(--color-foreground)]">{item.heading}</dt>
                   <dd className="mt-1 text-sm leading-relaxed text-[var(--color-muted)]">
                     {item.body}
                   </dd>
@@ -131,7 +133,7 @@ export default function ShippingReturnsPage() {
             </dl>
           </section>
         ))}
-      </div>
+      </RevealStagger>
 
       <p className="mt-14 text-sm text-[var(--color-muted)]">
         Still have questions?{' '}
