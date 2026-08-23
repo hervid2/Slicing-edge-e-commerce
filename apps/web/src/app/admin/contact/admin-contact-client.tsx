@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { MotionModal } from '@/components/ui/motion-modal';
 import {
   listAdminMessages,
   markMessageRead,
@@ -66,25 +68,19 @@ function MessageModal({ msg, onClose, onDeleted, onRead }: MessageModalProps) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="msg-modal-title"
-    >
-      <div className="w-full max-w-lg rounded-xl bg-[var(--color-surface)] p-6 shadow-xl">
-        <h2
-          id="msg-modal-title"
-          className="mb-1 font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)]"
-        >
-          {msg.subject}
-        </h2>
-        <p className="mb-4 text-sm text-[var(--color-muted)]">
-          From <strong>{msg.name}</strong> ({msg.email}) · {formatDate(msg.createdAt)}
-        </p>
-        <p className="whitespace-pre-wrap rounded-lg bg-[var(--color-background)] p-4 text-sm text-[var(--color-foreground)]">
-          {msg.message}
-        </p>
+    <MotionModal onClose={onClose} ariaLabelledBy="msg-modal-title" className="max-w-lg p-6">
+      <h2
+        id="msg-modal-title"
+        className="mb-1 font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)]"
+      >
+        {msg.subject}
+      </h2>
+      <p className="mb-4 text-sm text-[var(--color-muted)]">
+        From <strong>{msg.name}</strong> ({msg.email}) · {formatDate(msg.createdAt)}
+      </p>
+      <p className="whitespace-pre-wrap rounded-lg bg-[var(--color-background)] p-4 text-sm text-[var(--color-foreground)]">
+        {msg.message}
+      </p>
 
         {/* Reply section */}
         <div className="mt-5">
@@ -137,8 +133,7 @@ function MessageModal({ msg, onClose, onDeleted, onRead }: MessageModalProps) {
             {sending ? 'Sending…' : 'Send Reply'}
           </button>
         </div>
-      </div>
-    </div>
+    </MotionModal>
   );
 }
 
@@ -279,17 +274,20 @@ export function AdminContactClient() {
         </div>
       )}
 
-      {selected && (
-        <MessageModal
-          msg={selected}
-          onClose={() => setSelected(null)}
-          onDeleted={(id) => {
-            setMessages((prev) => prev.filter((m) => m.id !== id));
-            setTotal((prev) => prev - 1);
-          }}
-          onRead={(id) => setMessages((prev) => prev.map((m) => m.id === id ? { ...m, isRead: true } : m))}
-        />
-      )}
+      <AnimatePresence>
+        {selected && (
+          <MessageModal
+            key={selected.id}
+            msg={selected}
+            onClose={() => setSelected(null)}
+            onDeleted={(id) => {
+              setMessages((prev) => prev.filter((m) => m.id !== id));
+              setTotal((prev) => prev - 1);
+            }}
+            onRead={(id) => setMessages((prev) => prev.map((m) => m.id === id ? { ...m, isRead: true } : m))}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

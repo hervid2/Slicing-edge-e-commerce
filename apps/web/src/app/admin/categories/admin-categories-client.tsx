@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { MotionModal } from '@/components/ui/motion-modal';
 import {
   listAdminCategories,
   createCategory,
@@ -64,19 +66,13 @@ function CategoryForm({ initial, onSaved, onCancel }: CategoryFormProps) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="cat-form-title"
-    >
-      <div className="w-full max-w-md rounded-xl bg-[var(--color-surface)] p-6 shadow-xl">
-        <h2
-          id="cat-form-title"
-          className="mb-4 font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)]"
-        >
-          {initial ? 'Edit Category' : 'New Category'}
-        </h2>
+    <MotionModal onClose={onCancel} ariaLabelledBy="cat-form-title" className="max-w-md p-6">
+      <h2
+        id="cat-form-title"
+        className="mb-4 font-[family-name:var(--font-heading)] text-xl font-bold text-[var(--color-primary)]"
+      >
+        {initial ? 'Edit Category' : 'New Category'}
+      </h2>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           <div>
             <label htmlFor="cat-name" className="mb-1 block text-sm font-medium text-[var(--color-foreground)]">
@@ -160,8 +156,7 @@ function CategoryForm({ initial, onSaved, onCancel }: CategoryFormProps) {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </MotionModal>
   );
 }
 
@@ -318,13 +313,16 @@ export function AdminCategoriesClient() {
         </div>
       )}
 
-      {editing !== null && (
-        <CategoryForm
-          initial={editing === 'new' ? undefined : editing}
-          onSaved={handleSaved}
-          onCancel={() => setEditing(null)}
-        />
-      )}
+      <AnimatePresence>
+        {editing !== null && (
+          <CategoryForm
+            key={editing === 'new' ? 'new' : editing.id}
+            initial={editing === 'new' ? undefined : editing}
+            onSaved={handleSaved}
+            onCancel={() => setEditing(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

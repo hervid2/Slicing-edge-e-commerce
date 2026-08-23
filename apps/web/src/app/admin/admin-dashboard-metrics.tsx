@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getAdminMetrics, type DashboardMetrics, type OrderStatus } from '@/lib/api/admin-metrics';
+import { RevealStagger } from '@/components/motion/reveal';
+import { AnimatedCounter } from '@/components/motion/animated-counter';
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
@@ -89,28 +91,38 @@ export function AdminDashboardMetrics() {
       .finally(() => setLoading(false));
   }, []);
 
-  const kpis = [
+  const kpis: {
+    label: string;
+    rawValue: number | null;
+    format: (v: number) => string;
+    sub: string;
+    href: string;
+  }[] = [
     {
       label: 'Total Orders',
-      value: metrics ? String(metrics.kpis.totalOrders) : loading ? '…' : '—',
+      rawValue: metrics ? metrics.kpis.totalOrders : null,
+      format: (v) => String(Math.round(v)),
       sub: metrics ? `${metrics.kpis.pendingOrders} pending` : '',
       href: '/admin/orders',
     },
     {
       label: 'Revenue',
-      value: metrics ? formatCurrency(metrics.kpis.totalRevenue) : loading ? '…' : '—',
+      rawValue: metrics ? metrics.kpis.totalRevenue : null,
+      format: formatCurrency,
       sub: 'Excl. cancelled',
       href: '/admin/orders',
     },
     {
       label: 'Active Products',
-      value: metrics ? String(metrics.kpis.activeProducts) : loading ? '…' : '—',
+      rawValue: metrics ? metrics.kpis.activeProducts : null,
+      format: (v) => String(Math.round(v)),
       sub: '',
       href: '/admin/products',
     },
     {
       label: 'Users',
-      value: metrics ? String(metrics.kpis.totalUsers) : loading ? '…' : '—',
+      rawValue: metrics ? metrics.kpis.totalUsers : null,
+      format: (v) => String(Math.round(v)),
       sub: '',
       href: '/admin/users',
     },
@@ -125,25 +137,29 @@ export function AdminDashboardMetrics() {
       )}
 
       {/* KPI cards */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <RevealStagger className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi) => (
           <Link
             key={kpi.label}
             href={kpi.href}
-            className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-shadow hover:shadow-md"
+            className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-shadow hover:shadow-md"
           >
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
               {kpi.label}
             </p>
             <p className="mt-2 font-[family-name:var(--font-heading)] text-3xl font-bold text-[var(--color-primary)]">
-              {kpi.value}
+              {kpi.rawValue !== null ? (
+                <AnimatedCounter value={kpi.rawValue} format={kpi.format} />
+              ) : (
+                loading ? '…' : '—'
+              )}
             </p>
             {kpi.sub && (
               <p className="mt-1 text-xs text-[var(--color-muted)]">{kpi.sub}</p>
             )}
           </Link>
         ))}
-      </div>
+      </RevealStagger>
 
       {/* Orders chart */}
       {metrics && (

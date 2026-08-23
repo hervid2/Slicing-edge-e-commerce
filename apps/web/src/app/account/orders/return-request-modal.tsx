@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { X, PackageSearch } from 'lucide-react';
+import { AnimatePresence } from 'motion/react';
+import { MotionModal } from '@/components/ui/motion-modal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -94,22 +96,13 @@ export function ReturnRequestModal({ orderNumber, customerEmail }: ReturnRequest
         Request Return
       </button>
 
-      {open && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="return-dialog-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={handleClose}
-            aria-hidden="true"
-          />
-
-          {/* Panel */}
-          <div className="relative w-full max-w-md rounded-xl bg-[var(--color-surface)] p-6 shadow-xl">
+      <AnimatePresence>
+        {open && (
+          <MotionModal
+            onClose={handleClose}
+            ariaLabelledBy="return-dialog-title"
+            className="relative max-w-md p-6"
+          >
             <button
               type="button"
               onClick={handleClose}
@@ -225,9 +218,9 @@ export function ReturnRequestModal({ orderNumber, customerEmail }: ReturnRequest
                 </form>
               </>
             )}
-          </div>
-        </div>
-      )}
+          </MotionModal>
+        )}
+      </AnimatePresence>
     </>
   );
 }
