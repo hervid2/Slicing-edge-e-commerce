@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
+import { RevealStagger } from '@/components/motion/reveal';
 
 export const revalidate = 60;
 
@@ -45,7 +46,7 @@ export default async function CategoriesPage() {
         Browse our curated selection of professional-grade kitchen knives.
       </p>
 
-      <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <RevealStagger className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {categories.map((cat) => {
           const imgUrl = cat.products[0]?.images[0]?.url;
           const imgAlt = cat.products[0]?.images[0]?.altText ?? cat.name;
@@ -71,9 +72,7 @@ export default async function CategoriesPage() {
                   {cat.name}
                 </h2>
                 {cat.description && (
-                  <p className="mt-1 text-sm text-white/70 line-clamp-2">
-                    {cat.description}
-                  </p>
+                  <p className="mt-1 text-sm text-white/70 line-clamp-2">{cat.description}</p>
                 )}
                 <p className="mt-2 text-sm font-medium text-white/90">
                   {cat._count.products} {cat._count.products === 1 ? 'product' : 'products'}
@@ -82,7 +81,7 @@ export default async function CategoriesPage() {
             </Link>
           );
         })}
-      </div>
+      </RevealStagger>
 
       {categories.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
