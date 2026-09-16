@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slicing Edge · Arquitectura</title>
+<meta name="description" content="Arquitectura interactiva de Slicing Edge: e-commerce full-stack con Next.js 15, Fastify 5, PostgreSQL, Stripe y un asistente con IA.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Slicing Edge · Arquitectura interactiva">
+<meta property="og:description" content="Explora cómo viaja una compra, el chat con IA, la autenticación y el despliegue en este e-commerce full-stack.">
+<meta property="og:url" content="https://hervid2.github.io/Slicing-edge-e-commerce/architecture/">
+<meta property="og:image" content="https://hervid2.github.io/Slicing-edge-e-commerce/architecture/architecture.png">
+<meta property="og:image:width" content="2160">
+<meta property="og:image:height" content="2700">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔪</text></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#C5CFC6; --surface:#D5DDD6; --surface-2:#E3E9E4;
+  --zone:rgba(26,58,42,.05); --zone-line:#7E9A86;
+  --owned-fill:#F2F6F2; --owned-line:#2D5A3F;
+  --data-fill:#E5EEE9; --data-line:#4F8571;
+  --ext-fill:#EDF0F0; --ext-line:#6E7C83;
+  --chip:#DDE8DF; --chip-ink:#1A3A2A;
+  --ink:#13291E; --ink-2:#3C5446; --ink-3:#5E7466;
+  --edge:#6F8A78; --flow:#1F7A3A; --focus:#1F7A3A;
+  --blade-a:#8E9EA6; --blade-b:#EEF2F3;
+  --serif:"Playfair Display", Georgia, "Times New Roman", serif;
+  --sans:Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E2118; --surface:#13291E; --surface-2:#18321F;
+    --zone:rgba(197,207,198,.035); --zone-line:#2F5C41;
+    --owned-fill:#1A3A2A; --owned-line:#3D8B4F;
+    --data-fill:#15302A; --data-line:#6FA38C;
+    --ext-fill:#1B2926; --ext-line:#8E9EA6;
+    --chip:rgba(61,139,79,.2); --chip-ink:#CFE3D4;
+    --ink:#E4EBE5; --ink-2:#A9B8AD; --ink-3:#71887A;
+    --edge:#4E7A5E; --flow:#7BD88F; --focus:#7BD88F;
+    --blade-a:#5F6E74; --blade-b:#DDE4E7;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E2118; --surface:#13291E; --surface-2:#18321F;
+  --zone:rgba(197,207,198,.035); --zone-line:#2F5C41;
+  --owned-fill:#1A3A2A; --owned-line:#3D8B4F;
+  --data-fill:#15302A; --data-line:#6FA38C;
+  --ext-fill:#1B2926; --ext-line:#8E9EA6;
+  --chip:rgba(61,139,79,.2); --chip-ink:#CFE3D4;
+  --ink:#E4EBE5; --ink-2:#A9B8AD; --ink-3:#71887A;
+  --edge:#4E7A5E; --flow:#7BD88F; --focus:#7BD88F;
+  --blade-a:#5F6E74; --blade-b:#DDE4E7;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.layout>div{min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+
+.page{max-width:1400px;margin:0 auto;padding:32px 24px 48px}
+.masthead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px}
+.masthead h1{font-family:var(--serif);font-weight:700;font-size:clamp(2.4rem,5vw,3.6rem);line-height:1;margin:0;letter-spacing:-.01em}
+.masthead p{margin:.6rem 0 0;color:var(--ink-2);max-width:60ch;font-size:1.02rem}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--owned-line);background:transparent;text-decoration:none;font-weight:600;font-size:.92rem;cursor:pointer}
+.btn.primary{background:var(--owned-line);color:#fff;border-color:var(--owned-line)}
+.blade{display:block;width:100%;height:14px;margin:22px 0 26px}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+.stage{background:var(--surface);border-radius:14px;padding:12px;overflow-x:auto}
+.stage svg{display:block;width:100%;min-width:760px;height:auto}
+
+.panel{background:var(--surface);border-radius:14px;padding:20px;position:sticky;top:16px}
+.panel h2{font-family:var(--serif);font-weight:600;font-size:1.35rem;margin:0 0 .3rem}
+.panel h3{font-size:.95rem;margin:1.2rem 0 .5rem}
+.panel p{margin:.4rem 0;color:var(--ink-2);font-size:.93rem}
+.flows{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.flow-btn{min-height:44px;border-radius:8px;border:1px solid var(--zone-line);background:var(--surface-2);cursor:pointer;font-weight:600;font-size:.88rem;text-align:left;padding:8px 12px}
+.flow-btn[aria-pressed="true"]{border-color:var(--flow);box-shadow:inset 0 0 0 1px var(--flow)}
+.reset{margin-top:10px;background:none;border:0;padding:6px 0;color:var(--ink-2);text-decoration:underline;cursor:pointer;font-size:.88rem;min-height:44px}
+.detail{border-top:1px solid var(--zone-line);margin-top:14px;padding-top:4px}
+.steps{margin:.4rem 0 0;padding-left:1.3rem}
+.steps li{margin:.45rem 0;color:var(--ink-2);font-size:.92rem}
+.steps li::marker{color:var(--flow);font-weight:700}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:.6rem 0}
+.tag{background:var(--chip);color:var(--chip-ink);border-radius:6px;padding:3px 9px;font-size:.8rem;font-weight:500}
+.links{list-style:none;padding:0;margin:.3rem 0 0}
+.links li{font-size:.9rem;color:var(--ink-2);padding:3px 0}
+.legend{display:flex;flex-wrap:wrap;gap:14px 20px;margin-top:18px;font-size:.85rem;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.sw{width:22px;height:14px;border-radius:4px;border:2px solid}
+.sw.owned{background:var(--owned-fill);border-color:var(--owned-line)}
+.sw.data{background:var(--data-fill);border-color:var(--data-line)}
+.sw.ext{background:var(--ext-fill);border-color:var(--ext-line);border-style:dashed}
+.sw.zone{background:var(--zone);border-color:var(--zone-line);border-style:dashed}
+.credit{margin-top:28px;color:var(--ink-3);font-size:.85rem}
+
+/* SVG */
+.zone rect{fill:var(--zone);stroke:var(--zone-line);stroke-width:1.5;stroke-dasharray:6 6}
+.zone .zl{font-family:var(--serif);font-style:italic;font-weight:500;font-size:18px;fill:var(--ink-2)}
+.zone .zn{font-size:12px;fill:var(--ink-3)}
+.node{cursor:pointer;transition:opacity .2s}
+.node .box{stroke-width:2}
+.node.owned .box{fill:var(--owned-fill);stroke:var(--owned-line)}
+.node.data .box{fill:var(--data-fill);stroke:var(--data-line)}
+.node.ext .box{fill:var(--ext-fill);stroke:var(--ext-line);stroke-dasharray:7 5}
+.node.client .box{fill:var(--surface-2);stroke:var(--ink-2)}
+.node .t{font-weight:600;font-size:17px;fill:var(--ink)}
+.node.small .t{font-size:14px}
+.node .s{font-size:13px;fill:var(--ink-2)}
+.node.small .s{font-size:11.5px}
+.node .chip rect{fill:var(--chip)}
+.node .chip text{font-size:12px;font-weight:500;fill:var(--chip-ink)}
+.node:focus{outline:none}
+.node:focus-visible .box,.node.sel .box{stroke:var(--flow);stroke-width:3;stroke-dasharray:none}
+.edge path{fill:none;stroke:var(--edge);stroke-width:2;transition:opacity .2s,stroke .2s}
+.edge text{font-size:12px;fill:var(--ink-2);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.zone rect,.edge{transition:opacity .2s}
+svg.dim .node:not(.on),svg.dim .edge:not(.on){opacity:.18}
+svg.dim .zone:not(.on) rect{opacity:.5}
+.edge.on path{stroke:var(--flow);stroke-width:3;stroke-dasharray:9 7;animation:run 1s linear infinite}
+.zone.on rect{stroke:var(--flow)}
+@keyframes run{to{stroke-dashoffset:-16}}
+@media (prefers-reduced-motion:reduce){.edge.on path{animation:none}.node,.edge{transition:none}}
+
+/* Póster para LinkedIn (1080 × 1350) */
+body.poster{width:1080px;height:1350px;overflow:hidden}
+body.poster .page{max-width:none;width:1080px;height:1350px;padding:0;display:flex;flex-direction:column}
+body.poster .masthead{padding:44px 40px 0;align-items:flex-start;flex-wrap:nowrap}
+body.poster .masthead h1{font-size:64px}
+body.poster .masthead p{font-size:19px;max-width:none}
+body.poster .actions,body.poster .panel,body.poster .credit{display:none}
+body.poster .blade{margin:18px 40px 0;width:calc(100% - 80px)}
+body.poster .layout{display:block;flex:1}
+body.poster .stage{background:transparent;padding:0;border-radius:0}
+body.poster .stage svg{min-width:0}
+body.poster .legend{margin:6px 0 0;flex-direction:column;gap:6px;font-size:14px;white-space:nowrap}
+body.poster .pfoot{display:flex}
+body.poster .edge text{stroke:var(--bg)}
+.pfoot{display:none;justify-content:space-between;align-items:center;padding:0 40px 30px;color:var(--ink-2);font-size:16px}
+.pfoot b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <div>
+      <h1>Slicing Edge</h1>
+      <p>Arquitectura de una tienda full-stack de cuchillos de cocina premium</p>
+    </div>
+    <div class="actions">
+      <a class="btn primary" href="https://slicing-edge-e-commerce-web.vercel.app" target="_blank" rel="noopener">Ver demo</a>
+      <a class="btn" href="https://github.com/hervid2/Slicing-edge-e-commerce" target="_blank" rel="noopener">Ver código</a>
+      <button class="btn" id="themeBtn" type="button">Cambiar tema</button>
+    </div>
+    <div class="legend poster-legend" hidden>
+      <span><i class="sw owned"></i>Código propio</span>
+      <span><i class="sw data"></i>Datos y archivos</span>
+      <span><i class="sw ext"></i>Servicio externo</span>
+      <span><i class="sw zone"></i>Plataforma de despliegue</span>
+    </div>
+  </header>
+
+  <svg class="blade" viewBox="0 0 1000 14" preserveAspectRatio="none" aria-hidden="true">
+    <defs><linearGradient id="steel" x1="0" x2="1"><stop offset="0" stop-color="var(--blade-a)"/><stop offset=".55" stop-color="var(--blade-b)"/><stop offset="1" stop-color="var(--blade-a)"/></linearGradient></defs>
+    <polygon points="0,6 1000,0 1000,3 0,8" fill="url(#steel)"/>
+    <polygon points="0,8 1000,3 1000,4 0,8.6" fill="var(--flow)" opacity=".7"/>
+  </svg>
+
+  <div class="layout">
+    <div>
+      <div class="stage"><svg id="diagram" viewBox="0 0 1080 1120" role="img" aria-labelledby="dgTitle"><title id="dgTitle">Diagrama de arquitectura de Slicing Edge</title></svg></div>
+      <div class="legend page-legend">
+        <span><i class="sw owned"></i>Código propio</span>
+        <span><i class="sw data"></i>Datos y archivos</span>
+        <span><i class="sw ext"></i>Servicio externo</span>
+        <span><i class="sw zone"></i>Plataforma de despliegue</span>
+      </div>
+    </div>
+
+    <aside class="panel" aria-live="polite">
+      <h2>Explora el sistema</h2>
+      <p>Toca un componente para ver qué hace, o elige un recorrido para seguir una petición de punta a punta.</p>
+      <div class="flows" role="group" aria-label="Recorridos">
+        <button class="flow-btn" data-flow="compra" aria-pressed="false">Compra</button>
+        <button class="flow-btn" data-flow="chat" aria-pressed="false">Chat con IA</button>
+        <button class="flow-btn" data-flow="auth" aria-pressed="false">Autenticación</button>
+        <button class="flow-btn" data-flow="deploy" aria-pressed="false">Despliegue</button>
+      </div>
+      <button class="reset" id="resetBtn" type="button">Ver todo el sistema</button>
+      <div class="detail" id="detail"></div>
+    </aside>
+  </div>
+
+  <footer class="pfoot">
+    <span><b>Hernan David Cardona Becerra</b>, Full Stack Developer</span>
+    <span>github.com/hervid2/Slicing-edge-e-commerce</span>
+  </footer>
+  <p class="credit">Hecho por Hernan David Cardona Becerra. Proyecto de portafolio con licencia MIT, sin relación con marcas reales.</p>
+</div>
+
+<script>
+const ZONES=[
+  {id:'vercel',x:40,y:120,w:760,h:170,label:'Vercel',note:'Deploy automático desde main'},
+  {id:'railway',x:40,y:330,w:1000,h:330,label:'Railway',note:'Dockerfile y railway.toml'},
+  {id:'mono',x:40,y:880,w:1000,h:100,label:'Monorepo con Turborepo',note:'npm workspaces'},
+  {id:'ci',x:40,y:1000,w:1000,h:110,label:'CI/CD en GitHub Actions',note:'deploy.yml'}
+];
+const NODES=[
+  {id:'browser',k:'client',x:390,y:10,w:300,h:80,t:'Navegador',s:'Tienda, panel admin y chat IA',
+   d:'Lo que ve el cliente: catálogo con filtros y búsqueda, carrito, checkout, lista de deseos, reseñas e historial de pedidos. Los administradores entran al panel desde aquí.'},
+  {id:'web',k:'owned',x:70,y:160,w:700,h:115,t:'apps/web',s:'Next.js 15 con App Router, React 19 y Tailwind CSS v4',
+   chips:['Auth.js v5','Zustand','SEO y JSON-LD','WCAG 2.1 AA','TypeScript'],
+   d:'Frontend que renderiza la tienda y el panel de administración. Maneja la sesión con Auth.js y el carrito con Zustand persistido en localStorage. Incluye sitemap, robots, imágenes Open Graph y datos estructurados.'},
+  {id:'google',k:'ext',x:840,y:165,w:200,h:90,t:'Google OAuth',s:'Inicio de sesión social',
+   d:'Proveedor OAuth para entrar con Google, además del registro con correo y contraseña.'},
+  {id:'api',k:'owned',x:70,y:370,w:560,h:250,t:'apps/api',s:'API REST con Fastify 5 y TypeScript',
+   chips:['Helmet y CSP','Sesiones JWT','Validación con Zod','Rate limiting','Swagger en /docs','Webhooks de Stripe','Métricas admin','Carga multipart'],
+   d:'Centraliza la lógica de negocio: productos, carrito, órdenes, reseñas, usuarios y métricas. Aplica cabeceras de seguridad, validación de entradas y límite de peticiones. Documentada con Swagger.'},
+  {id:'db',k:'data',x:700,y:370,w:310,h:120,t:'PostgreSQL',s:'Prisma ORM, migraciones y seed',
+   d:'Base de datos relacional gestionada con Prisma. El esquema, las migraciones y los datos de ejemplo viven en packages/db.'},
+  {id:'uploads',k:'data',x:700,y:520,w:310,h:100,t:'/uploads',s:'Imágenes de productos, hasta 10 MB',
+   d:'Las imágenes se suben desde el panel de administración y la API las sirve como archivos estáticos para el componente Image de Next.js.'},
+  {id:'stripe',k:'ext',x:40,y:720,w:230,h:110,t:'Stripe',s:'Checkout, webhooks y Tax',
+   d:'Checkout Sessions para el pago, webhooks para confirmar la orden en el servidor y Stripe Tax para los impuestos.'},
+  {id:'resend',k:'ext',x:296,y:720,w:230,h:110,t:'Resend',s:'Correos con React Email',
+   d:'Correos transaccionales: bienvenida, recuperación de contraseña, confirmación de pedido y aviso de envío.'},
+  {id:'upstash',k:'ext',x:552,y:720,w:230,h:110,t:'Upstash Redis',s:'Límite de peticiones',
+   d:'Redis serverless con @upstash/ratelimit para proteger los endpoints sensibles del abuso.'},
+  {id:'groq',k:'ext',x:808,y:720,w:230,h:110,t:'Groq AI',s:'Llama 3.3 70B con tool use',
+   d:'Modelo del asistente de compras. Llama herramientas desde el servidor para buscar productos, recomendar por categoría y rastrear pedidos.'},
+  {id:'pdb',k:'owned',sm:1,x:70,y:915,w:220,h:52,t:'packages/db',s:'Esquema y cliente Prisma',d:'Esquema de Prisma, cliente generado, migraciones y seed, compartidos por la API.'},
+  {id:'pshared',k:'owned',sm:1,x:310,y:915,w:220,h:52,t:'packages/shared',s:'Esquemas Zod y tipos',d:'Esquemas Zod, constantes y tipos que usan tanto la web como la API, para que el contrato sea el mismo en ambos lados.'},
+  {id:'pemail',k:'owned',sm:1,x:550,y:915,w:220,h:52,t:'packages/email',s:'Plantillas React Email',d:'Plantillas de correo en React y el helper que las envía con Resend.'},
+  {id:'pconfig',k:'owned',sm:1,x:790,y:915,w:220,h:52,t:'packages/config',s:'TypeScript compartido',d:'Configuraciones base de TypeScript para todo el monorepo.'}
+];
+const CI=[['ci1','Push a main','Dispara el pipeline','Cada push a la rama main inicia el pipeline definido en deploy.yml.'],
+  ['ci2','Tests','Vitest','Pruebas unitarias y de integración del backend con Vitest.'],
+  ['ci3','Build','turbo build','Turborepo compila paquetes y apps en orden y con caché.'],
+  ['ci4','Deploy API','Railway CLI','La API se despliega en Railway usando su Dockerfile.'],
+  ['ci5','Deploy web','Vercel CLI','La web de Next.js se despliega en Vercel.'],
+  ['ci6','Smoke test','Verifica producción','scripts/smoke-test.sh comprueba que el entorno en vivo responda.']];
+CI.forEach((c,i)=>NODES.push({id:c[0],k:'owned',sm:1,x:65+i*162,y:1038,w:140,h:55,t:c[1],s:c[2],d:c[3]}));
+
+const EDGES=[
+  {id:'bw',a:'browser',b:'web',p:'M540,90 L540,160',l:'HTTPS',lx:552,ly:130},
+  {id:'wg',a:'web',b:'google',p:'M770,210 L840,210',l:'OAuth',lx:805,ly:200,la:'middle'},
+  {id:'wa',a:'web',b:'api',p:'M350,275 L350,370',l:'REST con contratos Zod',lx:362,ly:320},
+  {id:'ad',a:'api',b:'db',p:'M630,430 L700,430',l:'Prisma',lx:665,ly:420,la:'middle'},
+  {id:'au',a:'api',b:'uploads',p:'M630,570 L700,570'},
+  {id:'as',a:'api',b:'stripe',p:'M150,620 C150,672 155,668 155,720',l:'pago y webhook',lx:164,ly:690},
+  {id:'ar',a:'api',b:'resend',p:'M290,620 C290,676 411,664 411,720'},
+  {id:'ak',a:'api',b:'upstash',p:'M430,620 C430,680 667,660 667,720'},
+  {id:'ag',a:'api',b:'groq',p:'M570,620 C570,684 923,656 923,720'}
+];
+for(let i=0;i<5;i++){const x=65+i*162+140;EDGES.push({id:'c'+i,a:CI[i][0],b:CI[i+1][0],p:`M${x},1065 L${x+22},1065`,arrow:1});}
+
+const FLOWS={
+  compra:{t:'Recorrido de compra',e:['bw','wa','as','ad','ar'],n:['browser','web','api','stripe','db','resend'],z:[],
+    s:['El carrito vive en Zustand y funciona para invitados y usuarios registrados.','La web pide a la API crear una sesión de Stripe Checkout.','El cliente paga en la página segura de Stripe.','Stripe confirma el pago por webhook y la API crea la orden en PostgreSQL.','Resend envía el correo de confirmación hecho con React Email.']},
+  chat:{t:'Recorrido del chat con IA',e:['bw','wa','ak','ag','ad'],n:['browser','web','api','upstash','groq','db'],z:[],
+    s:['El cliente escribe en el widget flotante.','La API revisa el límite de peticiones en Upstash Redis.','Groq con Llama 3.3 70B decide qué herramienta usar, siempre desde el servidor.','La herramienta consulta PostgreSQL para buscar productos, recomendar por categoría o rastrear un pedido.','La respuesta vuelve al widget sin exponer ninguna clave en el navegador.']},
+  auth:{t:'Recorrido de autenticación',e:['bw','wg','wa','ad','ar'],n:['browser','web','google','api','db','resend'],z:[],
+    s:['El usuario se registra con correo o entra con Google.','Auth.js maneja la sesión con estrategia JWT.','La API valida el token en cada petición protegida.','Usuarios y roles se guardan en PostgreSQL.','Resend envía verificación, bienvenida y recuperación de contraseña.']},
+  deploy:{t:'Recorrido de despliegue',e:['c0','c1','c2','c3','c4'],n:CI.map(c=>c[0]),z:['ci','vercel','railway'],
+    s:CI.map(c=>c[3])}
+};
+
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('diagram');
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const byId=Object.fromEntries(NODES.map(n=>[n.id,n]));
+let h='<defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--edge)"/></marker></defs>';
+ZONES.forEach(z=>{h+=`<g class="zone" data-id="${z.id}"><rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="14"/><text class="zl" x="${z.x+20}" y="${z.y+24}">${esc(z.label)}</text><text class="zn" x="${z.x+z.w-20}" y="${z.y+22}" text-anchor="end">${esc(z.note)}</text></g>`;});
+EDGES.forEach(e=>{h+=`<g class="edge" data-id="${e.id}" data-a="${e.a}" data-b="${e.b}"><path d="${e.p}"${e.arrow?' marker-end="url(#arr)"':''}/>${e.l?`<text x="${e.lx}" y="${e.ly}" text-anchor="${e.la||'start'}">${esc(e.l)}</text>`:''}</g>`;});
+NODES.forEach(n=>{
+  const cx=n.sm?n.x+14:n.x+20;
+  let inner=`<rect class="box" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="${n.sm?8:12}"/>`;
+  if(n.id==='uploads'){const ix=n.x+n.w-46,iy=n.y+18;inner+=`<path fill="none" stroke="var(--data-line)" stroke-width="1.6" stroke-linejoin="round" d="M${ix},${iy+2} h9 l3,4 h14 v16 h-26 z"/>`;}
+  else if(n.k==='data'&&!n.sm){const ix=n.x+n.w-44,iy=n.y+18;inner+=`<g fill="none" stroke="var(--data-line)" stroke-width="1.6"><ellipse cx="${ix+12}" cy="${iy+4}" rx="12" ry="4"/><path d="M${ix},${iy+4} v16 a12,4 0 0 0 24,0 v-16"/><path d="M${ix},${iy+12} a12,4 0 0 0 24,0"/></g>`;}
+  const ty=n.sm?n.y+22:n.y+(n.chips?36:Math.round(n.h/2)-4);
+  inner+=`<text class="t" x="${cx}" y="${ty}">${esc(n.t)}</text><text class="s" x="${cx}" y="${ty+(n.sm?19:23)}">${esc(n.s)}</text>`;
+  if(n.chips){let x=cx,y=ty+36;const max=n.x+n.w-20;
+    n.chips.forEach(c=>{const w=Math.round(c.length*6.9+22);if(x+w>max){x=cx;y+=36;}
+      inner+=`<g class="chip"><rect x="${x}" y="${y}" width="${w}" height="26" rx="6"/><text x="${x+11}" y="${y+17.5}">${esc(c)}</text></g>`;x+=w+8;});}
+  h+=`<g class="node ${n.k}${n.sm?' small':''}" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(n.t)}: ${esc(n.s)}">${inner}</g>`;
+});
+svg.insertAdjacentHTML('beforeend',h);
+
+const detail=document.getElementById('detail');
+const flowBtns=[...document.querySelectorAll('.flow-btn')];
+function clearMarks(){svg.classList.remove('dim');svg.querySelectorAll('.on,.sel').forEach(el=>el.classList.remove('on','sel'));flowBtns.forEach(b=>b.setAttribute('aria-pressed','false'));}
+function mark(sel,ids){ids.forEach(id=>{const el=svg.querySelector(`${sel}[data-id="${id}"]`);if(el)el.classList.add('on');});}
+function showFlow(key){
+  clearMarks();const f=FLOWS[key];svg.classList.add('dim');
+  mark('.node',f.n);mark('.edge',f.e);mark('.zone',f.z);
+  flowBtns.find(b=>b.dataset.flow===key).setAttribute('aria-pressed','true');
+  detail.innerHTML=`<h3>${esc(f.t)}</h3><ol class="steps">${f.s.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`;
+}
+function showNode(id){
+  clearMarks();const n=byId[id];svg.classList.add('dim');
+  const rel=EDGES.filter(e=>e.a===id||e.b===id);
+  mark('.node',[id,...rel.map(e=>e.a===id?e.b:e.a)]);mark('.edge',rel.map(e=>e.id));
+  svg.querySelector(`.node[data-id="${id}"]`).classList.add('sel');
+  const links=rel.map(e=>{const o=byId[e.a===id?e.b:e.a];return `<li>${e.a===id?'Hacia':'Desde'} ${esc(o.t)}${e.l?`, ${esc(e.l)}`:''}</li>`;}).join('');
+  detail.innerHTML=`<h3>${esc(n.t)}</h3><p>${esc(n.d)}</p>${n.chips?`<div class="tags">${n.chips.map(c=>`<span class="tag">${esc(c)}</span>`).join('')}</div>`:''}${links?`<h3>Conexiones</h3><ul class="links">${links}</ul>`:''}`;
+}
+function reset(){clearMarks();detail.innerHTML='';}
+svg.addEventListener('click',ev=>{const g=ev.target.closest('.node');if(g)showNode(g.dataset.id);else reset();});
+svg.addEventListener('keydown',ev=>{const g=ev.target.closest('.node');if(g&&(ev.key==='Enter'||ev.key===' ')){ev.preventDefault();showNode(g.dataset.id);}});
+flowBtns.forEach(b=>b.addEventListener('click',()=>showFlow(b.dataset.flow)));
+document.getElementById('resetBtn').addEventListener('click',reset);
+
+const root=document.documentElement;
+function currentTheme(){return root.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+try{const saved=localStorage.getItem('se-theme');if(saved)root.dataset.theme=saved;}catch(e){}
+document.getElementById('themeBtn').addEventListener('click',()=>{const next=currentTheme()==='dark'?'light':'dark';root.dataset.theme=next;try{localStorage.setItem('se-theme',next);}catch(e){}});
+
+if(/poster/.test(location.search+location.hash)){
+  root.dataset.theme='dark';document.body.classList.add('poster');
+  document.querySelector('.poster-legend').hidden=false;
+  document.querySelector('.page-legend').hidden=true;
+  if(/flow=(\w+)/.test(location.search))showFlow(RegExp.$1);
+}
+</script>
+</body>
+</html>
