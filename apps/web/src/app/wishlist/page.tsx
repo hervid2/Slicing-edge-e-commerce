@@ -146,7 +146,7 @@ export default function WishlistPage() {
             return (
               <div
                 key={id}
-                className="group relative overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] transition-shadow hover:shadow-md"
+                className="group relative h-full overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] transition-shadow hover:shadow-md"
               >
                 <Link href={`/products/${product.slug}`} className="block" aria-label={product.name}>
                   <div className="relative aspect-square overflow-hidden bg-[var(--color-background)]">
