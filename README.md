@@ -2,7 +2,7 @@
 
 > Premium kitchen knife e-commerce platform — portfolio-grade, full-stack monorepo.
 
-**Live demo:** `https://slicing-edge.vercel.app` &nbsp;|&nbsp; **API docs (Swagger):** `https://<railway-api-url>/docs`
+**Live demo:** `https://slicing-edge-e-commerce-web.vercel.app/` &nbsp;|&nbsp; **API docs (Swagger):** `https://<railway-api-url>/docs`
 
 ---
 
